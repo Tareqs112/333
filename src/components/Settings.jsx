@@ -65,7 +65,7 @@ const Settings = () => {
     setLoading(true);
     try {
       // Load Meta WhatsApp settings
-      const metaResponse = await fetch('/settings/meta-whatsapp');
+      const metaResponse = await fetch("https://111-production-573e.up.railway.app/settings/meta-whatsapp" );
       if (metaResponse.ok) {
         const metaData = await metaResponse.json();
         setMetaSettings(prev => ({
