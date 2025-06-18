@@ -107,7 +107,7 @@ const Settings = () => {
   const saveMetaSettings = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/settings/meta-whatsapp', {
+      const response = await fetch('https://111-production-573e.up.railway.app/settings/meta-whatsapp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(metaSettings)
@@ -156,7 +156,7 @@ const Settings = () => {
   const saveEmailSettings = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/settings/email', {
+      const response = await fetch('https://111-production-573e.up.railway.app/settings/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(emailSettings)
@@ -185,7 +185,7 @@ const Settings = () => {
 
     setTestLoading(true);
     try {
-      const response = await fetch('/settings/test-meta-whatsapp', {
+      const response = await fetch('https://111-production-573e.up.railway.app/settings/test-meta-whatsapp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ test_phone: testPhone })
@@ -213,7 +213,7 @@ const Settings = () => {
         requestBody.test_phone = testPhone;
       }
 
-      const response = await fetch('/settings/test-turkish-template', {
+      const response = await fetch('https://111-production-573e.up.railway.app/settings/test-turkish-template', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody)
