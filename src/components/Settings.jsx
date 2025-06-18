@@ -78,14 +78,14 @@ const Settings = () => {
       }
 
       // Load admin phone numbers
-      const adminResponse = await fetch('/settings/admin-phones');
+      const adminResponse = await fetch('https://111-production-573e.up.railway.app/settings/admin-phones');
       if (adminResponse.ok) {
         const adminData = await adminResponse.json();
         setAdminPhones(adminData.admin_phone_numbers.length > 0 ? adminData.admin_phone_numbers : ['']);
       }
 
       // Load email settings
-      const emailResponse = await fetch('/settings/email');
+      const emailResponse = await fetch('https://111-production-573e.up.railway.app/settings/email');
       if (emailResponse.ok) {
         const emailData = await emailResponse.json();
         setEmailSettings({
@@ -133,7 +133,7 @@ const Settings = () => {
     try {
       const cleanPhones = adminPhones.filter(phone => phone.trim() !== '');
       
-      const response = await fetch('/settings/admin-phones', {
+      const response = await fetch('https://111-production-573e.up.railway.app/settings/admin-phones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone_numbers: cleanPhones })
