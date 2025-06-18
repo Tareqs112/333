@@ -30,7 +30,7 @@ export function Invoices() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('111-production-573e.up.railway.app/api/invoices');
+      const response = await fetch('https://111-production-573e.up.railway.app/api/invoices');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -76,7 +76,7 @@ export function Invoices() {
 
   const handleDownload = (invoice) => {
     if (invoice.pdfPath) {
-      window.open(`111-production-573e.up.railway.app${invoice.pdfPath}`, '_blank');
+      window.open(`https://111-production-573e.up.railway.app/${invoice.pdfPath}`, '_blank');
     } else {
       alert('PDF not available for this invoice');
     }
@@ -90,7 +90,7 @@ export function Invoices() {
 
   const handlePreview = (invoice) => {
     if (invoice.pdfPath) {
-      window.open(`111-production-573e.up.railway.app${invoice.pdfPath}`, '_blank');
+      window.open(`https://111-production-573e.up.railway.app/${invoice.pdfPath}`, '_blank');
     } else {
       alert('PDF not available for preview');
     }

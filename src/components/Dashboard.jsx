@@ -54,7 +54,7 @@ export function Dashboard() {
 
   const fetchDashboardSummary = async () => {
     try {
-      const response = await fetch(`111-production-573e.up.railway.app/api/dashboard/summary?month=${selectedMonth}&year=${selectedYear}`);
+      const response = await fetch(`https://111-production-573e.up.railway.app/api/dashboard/summary?month=${selectedMonth}&year=${selectedYear}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -68,7 +68,7 @@ export function Dashboard() {
   const fetchUpcomingBookings = async () => {
     try {
       console.log('Fetching upcoming bookings...');
-      const response = await fetch('111-production-573e.up.railway.app/api/dashboard/upcoming-bookings');
+      const response = await fetch('https://111-production-573e.up.railway.app/api/dashboard/upcoming-bookings');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -83,7 +83,7 @@ export function Dashboard() {
   const fetchTodaysBookings = async () => {
     try {
       console.log('Fetching today\'s bookings...');
-      const response = await fetch('111-production-573e.up.railway.app/api/dashboard/todays-bookings');
+      const response = await fetch('https://111-production-573e.up.railway.app/api/dashboard/todays-bookings');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -97,7 +97,7 @@ export function Dashboard() {
 
   const fetchAccommodationStats = async () => {
     try {
-      const response = await fetch('111-production-573e.up.railway.app/api/dashboard/accommodation-stats');
+      const response = await fetch('https://111-production-573e.up.railway.app/api/dashboard/accommodation-stats');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -110,7 +110,7 @@ export function Dashboard() {
 
   const fetchDetailedStats = async () => {
     try {
-      const response = await fetch('111-production-573e.up.railway.app/api/dashboard/stats');
+      const response = await fetch('https://111-production-573e.up.railway.app/api/dashboard/stats');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

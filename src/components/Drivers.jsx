@@ -41,7 +41,7 @@ export function Drivers() {
 
   const fetchDrivers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/drivers');
+      const response = await fetch('https://111-production-573e.up.railway.app/api/drivers');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -54,7 +54,7 @@ export function Drivers() {
 
   const fetchVehicles = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/vehicles');
+      const response = await fetch('https://111-production-573e.up.railway.app/api/vehicles');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -75,7 +75,7 @@ export function Drivers() {
   const handleAddDriver = async () => {
     if (newDriver.firstName && newDriver.lastName && newDriver.email && newDriver.licenseNumber) {
       try {
-        const response = await fetch('http://localhost:5000/api/drivers', {
+        const response = await fetch('https://111-production-573e.up.railway.app/api/drivers', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ export function Drivers() {
   const handleUpdateDriver = async () => {
     if (editingDriver.firstName && editingDriver.lastName && editingDriver.email && editingDriver.licenseNumber) {
       try {
-        const response = await fetch(`http://localhost:5000/api/drivers/${editingDriver.id}`, {
+        const response = await fetch(`https://111-production-573e.up.railway.app/api/drivers/${editingDriver.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ export function Drivers() {
   const handleDeleteDriver = async (id) => {
     if (window.confirm('Are you sure you want to delete this driver?')) {
       try {
-        const response = await fetch(`http://localhost:5000/api/drivers/${id}`, {
+        const response = await fetch(`https://111-production-573e.up.railway.app/api/drivers/${id}`, {
           method: 'DELETE',
         });
         if (!response.ok) {
@@ -164,7 +164,7 @@ export function Drivers() {
 
   const handleUpdateVehicleAssignment = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/drivers/${assigningDriver.id}/assign-vehicles`, {
+      const response = await fetch(`https://111-production-573e.up.railway.app/api/drivers/${assigningDriver.id}/assign-vehicles`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -45,7 +45,7 @@ export function Clients() {
 
   const fetchClients = async () => {
     try {
-      const response = await fetch('111-production-573e.up.railway.app/api/clients');
+      const response = await fetch('https://111-production-573e.up.railway.app/api/clients');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -58,7 +58,7 @@ export function Clients() {
 
   const fetchCompanies = async () => {
     try {
-      const response = await fetch('111-production-573e.up.railway.app/api/companies');
+      const response = await fetch('https://111-production-573e.up.railway.app/api/companies');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -71,7 +71,7 @@ export function Clients() {
 
   const fetchClientBookings = async (clientId) => {
     try {
-      const response = await fetch(`111-production-573e.up.railway.app/api/clients/${clientId}/bookings`);
+      const response = await fetch(`https://111-production-573e.up.railway.app/api/clients/${clientId}/bookings`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -97,7 +97,7 @@ export function Clients() {
         };
       }
 
-      const response = await fetch(`111-production-573e.up.railway.app/api/invoices/client/${clientId}/generate`, {
+      const response = await fetch(`https://111-production-573e.up.railway.app/api/invoices/client/${clientId}/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ export function Clients() {
       alert(`Client detailed invoice generated successfully!`);
       
       if (data.pdfPath) {
-        window.open(`111-production-573e.up.railway.app${data.pdfPath}`, '_blank');
+        window.open(`https://111-production-573e.up.railway.app/${data.pdfPath}`, '_blank');
       }
       
       setShowInvoiceModal(false);
