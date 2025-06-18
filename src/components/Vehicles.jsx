@@ -41,7 +41,7 @@ export function Vehicles() {
 
   const fetchVehicles = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/vehicles');
+      const response = await fetch('https://111-production-573e.up.railway.app/api/vehicles');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -54,7 +54,7 @@ export function Vehicles() {
 
   const fetchDrivers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/drivers');
+      const response = await fetch('https://111-production-573e.up.railway.app/api/drivers');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -67,7 +67,7 @@ export function Vehicles() {
 
   const fetchAvailableDrivers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/vehicles/available-drivers');
+      const response = await fetch('https://111-production-573e.up.railway.app/api/vehicles/available-drivers');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -86,7 +86,7 @@ export function Vehicles() {
         assignedDriverId: newVehicle.assignedDriverId === 'unassigned' ? '' : newVehicle.assignedDriverId
       };
       
-      const response = await fetch('http://localhost:5000/api/vehicles', {
+      const response = await fetch('https://111-production-573e.up.railway.app/api/vehicles', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -122,7 +122,7 @@ export function Vehicles() {
         assignedDriverId: selectedVehicle.assignedDriverId === 'unassigned' ? '' : selectedVehicle.assignedDriverId
       };
       
-      const response = await fetch(`http://localhost:5000/api/vehicles/${selectedVehicle.id}`, {
+      const response = await fetch(`https://111-production-573e.up.railway.app/api/vehicles/${selectedVehicle.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -147,7 +147,7 @@ export function Vehicles() {
   const handleDeleteVehicle = async (vehicleId) => {
     if (window.confirm('Are you sure you want to delete this vehicle?')) {
       try {
-        const response = await fetch(`http://localhost:5000/api/vehicles/${vehicleId}`, {
+        const response = await fetch(`https://111-production-573e.up.railway.app/api/vehicles/${vehicleId}`, {
           method: 'DELETE',
         });
         if (!response.ok) {
@@ -169,7 +169,7 @@ export function Vehicles() {
       // تحويل 'unassigned' إلى null قبل الإرسال
       const actualDriverId = driverId === 'unassigned' ? null : driverId;
       
-      const response = await fetch(`http://localhost:5000/api/vehicles/${vehicleId}/assign-driver`, {
+      const response = await fetch(`https://111-production-573e.up.railway.app/api/vehicles/${vehicleId}/assign-driver`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
