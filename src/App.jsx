@@ -8,7 +8,8 @@ import { Drivers } from './components/Drivers';
 import { Vehicles } from './components/Vehicles';
 import { Bookings } from './components/Bookings';
 import { Invoices } from './components/Invoices';
-import Settings from './components/Settings.jsx';import './App.css';
+import Settings from './components/Settings.jsx';
+import './App.css';
 
 function App() {
   return (
