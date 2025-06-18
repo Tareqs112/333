@@ -49,7 +49,7 @@ export function Companies() {
 
   const fetchCompanies = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/companies');
+      const response = await fetch('111-production-573e.up.railway.app/api/companies');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -62,7 +62,7 @@ export function Companies() {
 
   const fetchCompanyClients = async (companyId, month = null, year = null) => {
     try {
-      let url = `http://localhost:5000/api/companies/${companyId}/clients/detailed`;
+      let url = `111-production-573e.up.railway.app/api/companies/${companyId}/clients/detailed`;
       if (month && year) {
         url += `?month=${month}&year=${year}`;
       }
@@ -80,7 +80,7 @@ export function Companies() {
 
   const generateMonthlyInvoice = async (companyId) => {
     try {
-      const response = await fetch('http://localhost:5000/api/invoices/monthly/generate', {
+      const response = await fetch('111-production-573e.up.railway.app/api/invoices/monthly/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -103,7 +103,7 @@ export function Companies() {
       
       // Optionally download the PDF immediately
       if (data.pdfPath) {
-        window.open(`http://localhost:5000${data.pdfPath}`, '_blank');
+        window.open(`111-production-573e.up.railway.app${data.pdfPath}`, '_blank');
       }
     } catch (error) {
       console.error('Error generating monthly invoice:', error);
@@ -152,7 +152,7 @@ export function Companies() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/companies', {
+      const response = await fetch('111-production-573e.up.railway.app/api/companies', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

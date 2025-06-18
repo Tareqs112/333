@@ -102,7 +102,7 @@ export function Bookings() {
 
   const fetchBookings = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/bookings');
+      const response = await fetch('111-production-573e.up.railway.app/api/bookings');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -115,7 +115,7 @@ export function Bookings() {
 
   const fetchClients = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/clients');
+      const response = await fetch('111-production-573e.up.railway.app/api/clients');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -128,7 +128,7 @@ export function Bookings() {
 
   const fetchDrivers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/drivers');
+      const response = await fetch('111-production-573e.up.railway.app/api/drivers');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -141,7 +141,7 @@ export function Bookings() {
 
   const fetchVehicles = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/vehicles');
+      const response = await fetch('111-production-573e.up.railway.app/api/vehicles');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -154,7 +154,7 @@ export function Bookings() {
 
   const fetchCompanies = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/companies');
+      const response = await fetch('111-production-573e.up.railway.app/api/companies');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -167,7 +167,7 @@ export function Bookings() {
 
   const fetchServiceTypes = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/bookings/service-types');
+      const response = await fetch('111-production-573e.up.railway.app/api/bookings/service-types');
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`HTTP error! status: ${response.status}, response: ${errorText}`);
@@ -188,7 +188,7 @@ export function Bookings() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/clients', {
+      const response = await fetch('111-production-573e.up.railway.app/api/clients', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -380,7 +380,7 @@ export function Bookings() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/bookings', {
+      const response = await fetch('111-production-573e.up.railway.app/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -411,7 +411,7 @@ export function Bookings() {
   const handleDeleteBooking = async (id) => {
     if (window.confirm('Are you sure you want to delete this booking?')) {
       try {
-        const response = await fetch(`http://localhost:5000/api/bookings/${id}`, {
+        const response = await fetch(`111-production-573e.up.railway.app/api/bookings/${id}`, {
           method: 'DELETE',
         });
         if (!response.ok) {
@@ -471,7 +471,7 @@ export function Bookings() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/bookings/${editingBooking.id}`, {
+      const response = await fetch(`111-production-573e.up.railway.app/${editingBooking.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
