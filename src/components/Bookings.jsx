@@ -1019,7 +1019,7 @@ export function Bookings() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
+                  <div className="col-span-full">
                     <Label htmlFor="clientId">Client *</Label>
                     <div className="flex gap-2">
                       <select
@@ -1039,6 +1039,7 @@ export function Bookings() {
                         type="button"
                         variant="outline"
                         onClick={() => setShowAddClientModal(true)}
+                        className="shrink-0"
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
@@ -1062,7 +1063,7 @@ export function Bookings() {
                       onChange={(e) => setNewBooking(prev => ({ ...prev, overall_endDate: e.target.value }))}
                     />
                   </div>
-                  <div>
+                  <div className="col-span-full">
                     <Label htmlFor="bookingNotes">Booking Notes</Label>
                     <textarea
                       id="bookingNotes"
@@ -1448,7 +1449,7 @@ export function Bookings() {
   const renderAddClientModal = () => {
     return (
       <Dialog open={showAddClientModal} onOpenChange={setShowAddClientModal}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add New Client</DialogTitle>
             <DialogDescription>
@@ -1456,7 +1457,7 @@ export function Bookings() {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 mb-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="newClientFirstName">First Name *</Label>
@@ -1533,9 +1534,9 @@ export function Bookings() {
             </div>
           </div>
           
-          <DialogFooter>
+          <DialogFooter className="sticky bottom-0 bg-white pt-4 border-t">
             <Button variant="outline" onClick={() => setShowAddClientModal(false)}>Cancel</Button>
-            <Button onClick={handleAddClient}>Add Client</Button>
+            <Button onClick={handleAddClient} className="bg-blue-600 hover:bg-blue-700">Add Client</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1626,9 +1627,9 @@ export function Bookings() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-center">
-                    <div className="bg-blue-50 p-6 rounded-lg border">
-                      <span className="text-gray-600 text-lg font-medium">Total Amount:</span>
-                      <p className="font-bold text-3xl text-blue-600 mt-2">${bookingTotalSelling.toFixed(2)}</p>
+                    <div className="bg-blue-50 p-3 rounded-lg border">
+                      <span className="text-gray-600 text-sm font-medium">Total Amount:</span>
+                      <p className="font-bold text-xl text-blue-600 mt-1">${bookingTotalSelling.toFixed(2)}</p>
                     </div>
                   </div>
                 </CardContent>
