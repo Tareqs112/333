@@ -364,8 +364,6 @@ export function Clients() {
                     <h4 className="text-lg font-semibold mb-2">Client Summary</h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                       <div className="bg-blue-50 p-3 rounded">
-                        <p className="text-blue-600 font-medium">Total Bookings</p>
-                        <p className="text-xl font-bold text-blue-800">{clientBookings.totalBookings}</p>
                       </div>
                       <div className="bg-green-50 p-3 rounded">
                         <p className="text-green-600 font-medium">Total Revenue</p>
