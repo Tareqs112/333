@@ -22,6 +22,7 @@ import {
   X,
   Save
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
 
 export function Companies() {
   const [companies, setCompanies] = useState([]);
@@ -30,12 +31,14 @@ export function Companies() {
   const [companyClients, setCompanyClients] = useState([]);
   const [showClientDetails, setShowClientDetails] = useState(false);
   const [showAddCompanyModal, setShowAddCompanyModal] = useState(false);
+  const [showEditCompanyModal, setShowEditCompanyModal] = useState(false); // New state for edit modal
   const [newCompany, setNewCompany] = useState({
     name: '',
     contactPerson: '',
     email: '',
     phone: ''
   });
+  const [editingCompany, setEditingCompany] = useState(null); // New state for editing company
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [monthlyInvoiceData, setMonthlyInvoiceData] = useState({
     month: new Date().getMonth() + 1,
@@ -143,7 +146,7 @@ export function Companies() {
     }
 
     // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
     if (!emailRegex.test(newCompany.email)) {
       alert('Please enter a valid email address');
       return;
@@ -177,6 +180,87 @@ export function Companies() {
     } catch (error) {
       console.error('Error adding company:', error);
       alert(`Error: ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteCompany = async (companyId) => {
+    if (window.confirm('Are you sure you want to delete this company? This action cannot be undone.')) {
+      try {
+        const response = await fetch(`https://111-production-573e.up.railway.app/api/companies/${companyId}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to delete company');
+        }
+
+        setCompanies(companies.filter(company => company.id !== companyId));
+        alert('Company deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting company:', error);
+        alert(`Error deleting company: ${error.message}`);
+      }
+    }
+  };
+
+  const handleEditCompany = (company) => {
+    setEditingCompany(company);
+    setShowEditCompanyModal(true);
+  };
+
+  const handleCloseEditCompanyModal = () => {
+    setShowEditCompanyModal(false);
+    setEditingCompany(null);
+  };
+
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditingCompany(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleUpdateCompany = async (e) => {
+    e.preventDefault();
+    
+    if (!editingCompany.name || !editingCompany.contactPerson || !editingCompany.email) {
+      alert('Please fill in all required fields (Company Name, Contact Person, and Email)');
+      return;
+    }
+
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    if (!emailRegex.test(editingCompany.email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`https://111-production-573e.up.railway.app/api/companies/${editingCompany.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editingCompany),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update company');
+      }
+
+      const updatedCompany = await response.json();
+      setCompanies(prev => prev.map(comp => (comp.id === updatedCompany.id ? updatedCompany : comp)));
+      handleCloseEditCompanyModal();
+      alert('Company updated successfully!');
+    } catch (error) {
+      console.error('Error updating company:', error);
+      alert(`Error updating company: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -281,10 +365,10 @@ export function Companies() {
                       <Eye className="mr-1 h-3 w-3" />
                       View Clients
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => handleEditCompany(company)}>
                       <Edit className="h-3 w-3" />
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="destructive" size="sm" onClick={() => handleDeleteCompany(company.id)}>
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
@@ -429,7 +513,6 @@ export function Companies() {
                     <div className="flex items-center justify-between mb-3">
                       <div>
                         <h4 className="font-semibold">{client.clientName}</h4>
-                        <p className="text-sm text-gray-600">{client.email}</p>
                         <p className="text-sm text-gray-500">
                           Arrival: {new Date(client.arrivalDate).toLocaleDateString()}
                         </p>
@@ -438,58 +521,10 @@ export function Companies() {
                         <div className="text-lg font-bold text-green-600">
                           ${client.totalSellingPrice.toFixed(2)}
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {client.services.length} services
-                        </div>
                       </div>
-                    </div>
-
-                    {/* Services Breakdown */}
-                    <div className="space-y-2">
-                      <h5 className="font-medium text-sm">Services:</h5>
-                      
-                      {/* Tours and Vehicle Rentals */}
-                      {client.services.filter(s => s.serviceCategory === "جولات وإيجار سيارة").length > 0 && (
-                        <div className="bg-blue-50 p-3 rounded">
-                          <h6 className="font-medium text-sm mb-2">Tours & Vehicle Rentals</h6>
-                          <div className="space-y-1">
-                            {client.services
-                              .filter(s => s.serviceCategory === "جولات وإيجار سيارة")
-                              .map((service, idx) => (
-                                <div key={idx} className="flex justify-between text-sm">
-                                  <span>{service.serviceName}</span>
-                                  <span className="font-medium">${service.totalSellingPrice.toFixed(2)}</span>
-                                </div>
-                              ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Hotels */}
-                      {client.services.filter(s => s.serviceCategory === "فنادق").length > 0 && (
-                        <div className="bg-green-50 p-3 rounded">
-                          <h6 className="font-medium text-sm mb-2">Hotels</h6>
-                          <div className="space-y-1">
-                            {client.services
-                              .filter(s => s.serviceCategory === "فنادق")
-                              .map((service, idx) => (
-                                <div key={idx} className="flex justify-between text-sm">
-                                  <span>{service.hotelName || service.serviceName}</span>
-                                  <span className="font-medium">${service.totalSellingPrice.toFixed(2)}</span>
-                                </div>
-                              ))}
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))}
-
-                {(!companyClients.clients || companyClients.clients.length === 0) && (
-                  <div className="text-center py-8 text-gray-500">
-                    No clients found for the selected period.
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
@@ -498,111 +533,72 @@ export function Companies() {
 
       {/* Add Company Modal */}
       {showAddCompanyModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Add New Company</h2>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCloseAddCompanyModal}
-                disabled={isSubmitting}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <form onSubmit={handleSubmitNewCompany} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Company Name <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="text"
-                  name="name"
-                  value={newCompany.name}
-                  onChange={handleInputChange}
-                  placeholder="Enter company name"
-                  required
-                  disabled={isSubmitting}
-                />
+        <Dialog open={showAddCompanyModal} onOpenChange={setShowAddCompanyModal}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Add New Company</DialogTitle>
+              <DialogDescription>Fill in the details for the new company.</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmitNewCompany} className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="name" className="text-right">Company Name</label>
+                <Input id="name" name="name" value={newCompany.name} onChange={handleInputChange} className="col-span-3" required />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Contact Person <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="text"
-                  name="contactPerson"
-                  value={newCompany.contactPerson}
-                  onChange={handleInputChange}
-                  placeholder="Enter contact person name"
-                  required
-                  disabled={isSubmitting}
-                />
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="contactPerson" className="text-right">Contact Person</label>
+                <Input id="contactPerson" name="contactPerson" value={newCompany.contactPerson} onChange={handleInputChange} className="col-span-3" required />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="email"
-                  name="email"
-                  value={newCompany.email}
-                  onChange={handleInputChange}
-                  placeholder="Enter email address"
-                  required
-                  disabled={isSubmitting}
-                />
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="email" className="text-right">Email</label>
+                <Input id="email" name="email" type="email" value={newCompany.email} onChange={handleInputChange} className="col-span-3" required />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Phone (Optional)
-                </label>
-                <Input
-                  type="tel"
-                  name="phone"
-                  value={newCompany.phone}
-                  onChange={handleInputChange}
-                  placeholder="Enter phone number"
-                  disabled={isSubmitting}
-                />
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="phone" className="text-right">Phone</label>
+                <Input id="phone" name="phone" type="tel" value={newCompany.phone} onChange={handleInputChange} className="col-span-3" />
               </div>
-
-              <div className="flex gap-3 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleCloseAddCompanyModal}
-                  disabled={isSubmitting}
-                  className="flex-1"
-                >
-                  Cancel
+              <DialogFooter>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Adding...' : 'Add Company'}
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Adding...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Add Company
-                    </>
-                  )}
-                </Button>
-              </div>
+              </DialogFooter>
             </form>
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Edit Company Modal */}
+      {showEditCompanyModal && editingCompany && (
+        <Dialog open={showEditCompanyModal} onOpenChange={setShowEditCompanyModal}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Edit Company</DialogTitle>
+              <DialogDescription>Update the details for {editingCompany.name}.</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleUpdateCompany} className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="editName" className="text-right">Company Name</label>
+                <Input id="editName" name="name" value={editingCompany.name} onChange={handleEditInputChange} className="col-span-3" required />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="editContactPerson" className="text-right">Contact Person</label>
+                <Input id="editContactPerson" name="contactPerson" value={editingCompany.contactPerson} onChange={handleEditInputChange} className="col-span-3" required />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="editEmail" className="text-right">Email</label>
+                <Input id="editEmail" name="email" type="email" value={editingCompany.email} onChange={handleEditInputChange} className="col-span-3" required />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="editPhone" className="text-right">Phone</label>
+                <Input id="editPhone" name="phone" type="tel" value={editingCompany.phone} onChange={handleEditInputChange} className="col-span-3" />
+              </div>
+              <DialogFooter>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Updating...' : 'Update Company'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

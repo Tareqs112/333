@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import AutocompleteInput from './AutocompleteInput';
 import {
   Plus,
   Search,
@@ -216,6 +217,7 @@ export function Bookings() {
         email: '',
         phone: '',
         companyId: '',
+        licenseNumber: '',
         licenseNumber: ''
       });
       
@@ -551,11 +553,10 @@ export function Bookings() {
 
             <div className="col-span-1">
               <Label htmlFor="serviceName">Hizmet Adı *</Label>
-              <Input
-                id="serviceName"
+              <AutocompleteInput
                 value={newService.serviceName}
-                onChange={(e) => setNewService(prev => ({ ...prev, serviceName: e.target.value }))}
-                placeholder="Hizmet adını girin"
+                onChange={(value) => setNewService(prev => ({ ...prev, serviceName: value }))}
+                placeholder="Tur adı yazın veya seçin..."
                 className="w-full"
               />
             </div>
@@ -1154,6 +1155,16 @@ export function Bookings() {
                   </option>
                 ))}
               </select>
+            </div>
+
+             <div>
+              <Label htmlFor="PassportNumber">passport Numarası</Label>
+              <Input
+                id="PassportNumber"
+                value={newClient.PassportNumber}
+                onChange={(e) => setNewClient(prev => ({ ...prev, PassportNumber: e.target.value }))}
+                placeholder="passport numarası"
+              />
             </div>
 
             <div>
