@@ -15,7 +15,8 @@ import {
   Clock,
   AlertCircle,
   CheckCircle,
-  XCircle
+  XCircle,
+  RefreshCw // Added Refresh icon
 } from 'lucide-react';
 
 export function Dashboard() {
@@ -40,11 +41,15 @@ export function Dashboard() {
     serviceTypeBreakdown: {}
   });
 
-  useEffect(() => {
+  const fetchData = () => {
     fetchDashboardSummary();
     fetchUpcomingBookings();
     fetchAccommodationStats();
     fetchDetailedStats();
+  };
+
+  useEffect(() => {
+    fetchData();
   }, []);
 
   const fetchDashboardSummary = async () => {
@@ -145,9 +150,15 @@ export function Dashboard() {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Kontrol Paneli</h1>
-        <p className="text-gray-600 text-sm md:text-base">Turizm yönetim sisteminize hoş geldiniz</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Kontrol Paneli</h1>
+          <p className="text-gray-600 text-sm md:text-base">Turizm yönetim sisteminize hoş geldiniz</p>
+        </div>
+        <Button onClick={fetchData} variant="outline" size="sm">
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Yenile
+        </Button>
       </div>
 
       {/* Main Stats Cards */}
@@ -381,7 +392,7 @@ export function Dashboard() {
                           {stats.type === 'Hotel' ? <Hotel className="h-4 w-4 text-blue-600" /> : <Home className="h-4 w-4 text-green-600" />}
                           <div>
                             <p className="font-medium text-sm md:text-base">{name}</p>
-                            <p className="text-xs text-gray-600">{stats.bookings} rezervasyon • {stats.nights} gece</p>
+                            <p className="text-xs text-gray-600">{stats.nights} gece</p>
                           </div>
                         </div>
                         <div className="text-right sm:text-left">
@@ -397,33 +408,36 @@ export function Dashboard() {
         </Card>
       )}
 
-      {/* Booking Status Breakdown */}
-      {Object.keys(detailedStats.bookingStatusBreakdown).length > 0 && (
+      {/* Detailed Stats */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-              <CheckCircle className="h-5 w-5" />
-              Rezervasyon Durum Dağılımı
+              <AlertCircle className="h-5 w-5" />
+              Rezervasyon Durumu Dağılımı
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {Object.entries(detailedStats.bookingStatusBreakdown).map(([status, count]) => (
-                <div key={status} className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-center mb-2">
-                    {getStatusIcon(status)}
+            <div className="space-y-2">
+              {Object.entries(detailedStats.bookingStatusBreakdown).length > 0 ? (
+                Object.entries(detailedStats.bookingStatusBreakdown).map(([status, count]) => (
+                  <div key={status} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(status)}
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
+                        {status}
+                      </span>
+                    </div>
+                    <span className="font-bold">{count}</span>
                   </div>
-                  <p className="text-sm font-medium text-gray-600 capitalize">{status}</p>
-                  <p className="text-xl md:text-2xl font-bold">{count}</p>
-                </div>
-              ))}
+                ))
+              ) : (
+                <div className="text-center py-4 text-gray-600">Veri yok</div>
+              )}
             </div>
           </CardContent>
         </Card>
-      )}
 
-      {/* Service Type Breakdown */}
-      {Object.keys(detailedStats.serviceTypeBreakdown).length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base md:text-lg">
@@ -432,20 +446,24 @@ export function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Object.entries(detailedStats.serviceTypeBreakdown).map(([serviceType, count]) => (
-                <div key={serviceType} className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-center mb-2">
-                    {getServiceIcon(serviceType)}
+            <div className="space-y-2">
+              {Object.entries(detailedStats.serviceTypeBreakdown).length > 0 ? (
+                Object.entries(detailedStats.serviceTypeBreakdown).map(([type, count]) => (
+                  <div key={type} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      {getServiceIcon(type)}
+                      <span>{type}</span>
+                    </div>
+                    <span className="font-bold">{count}</span>
                   </div>
-                  <p className="text-sm font-medium text-gray-600">{serviceType}</p>
-                  <p className="text-xl md:text-2xl font-bold">{count}</p>
-                </div>
-              ))}
+                ))
+              ) : (
+                <div className="text-center py-4 text-gray-600">Veri yok</div>
+              )}
             </div>
           </CardContent>
         </Card>
-      )}
+      </div>
     </div>
   );
 }
