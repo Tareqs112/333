@@ -156,61 +156,6 @@ export function Invoices() {
         </Button>
       </div>
 
-      {/* Invoice Templates Preview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Users className="mr-2 h-5 w-5" />
-              Client Invoice Template
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-white border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-              <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="font-semibold mb-2">Client Invoice</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Simplified client-facing invoice showing service totals grouped by category, with client name displayed once at the top
-              </p>
-              <div className="text-xs text-gray-500 space-y-1">
-                <div>• Client name shown once at top</div>
-                <div>• Tours/Vehicles total cost</div>
-                <div>• Hotels total cost with city</div>
-                <div>• Clean, professional layout</div>
-                <div>• Company logo and branding</div>
-                <div>• Auto-adjusting table cells</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Building2 className="mr-2 h-5 w-5" />
-              Company Invoice Template
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-white border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-              <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="font-semibold mb-2">Company/Internal Invoice</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Summarized monthly invoice grouped by client showing total costs for tours/vehicles and hotels, with arrival dates
-              </p>
-              <div className="text-xs text-gray-500 space-y-1">
-                <div>• Client name shown once per client</div>
-                <div>• Tours/Vehicles total cost per client</div>
-                <div>• Hotels total cost per client</div>
-                <div>• Arrival dates (simplified)</div>
-                <div>• Cost/profit analysis for internal use</div>
-                <div>• Auto-adjusting table cells</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Invoices List */}
       <Card>
         <CardHeader>
@@ -327,20 +272,6 @@ export function Invoices() {
       {/* Enhanced Features Notice */}
       <Card className="mt-6">
         <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-gray-600">
-              <p className="font-medium text-gray-900 mb-1">Enhanced Invoice Features:</p>
-              <ul className="space-y-1">
-                <li>• <strong>Client Invoices:</strong> Client name displayed once at top, services grouped by category with totals</li>
-                <li>• <strong>Company Invoices:</strong> Summarized by client with total costs for tours/vehicles and hotels</li>
-                <li>• <strong>Hotel Information:</strong> Now includes city information for better location tracking</li>
-                <li>• <strong>Simplified Layout:</strong> Clean, professional appearance with logical grouping</li>
-                <li>• <strong>Auto-adjusting Tables:</strong> Table cells automatically expand to fit content</li>
-                <li>• <strong>Responsive Design:</strong> Optimized for both desktop and mobile viewing</li>
-              </ul>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>

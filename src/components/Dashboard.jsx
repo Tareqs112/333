@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import {
   Calendar,
   DollarSign,
@@ -16,21 +15,18 @@ import {
   Clock,
   AlertCircle,
   CheckCircle,
-  XCircle,
-  User
+  XCircle
 } from 'lucide-react';
 
 export function Dashboard() {
   const [stats, setStats] = useState({
-    upcomingBookingsCount: 0,
+    upcomingBookings: 0,
     totalRevenue: 0,
     totalProfit: 0,
     activeClients: 0
   });
 
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // 1-12
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [todaysBookings, setTodaysBookings] = useState([]);
+  const [recentBookings, setRecentBookings] = useState([]);
   const [upcomingBookings, setUpcomingBookings] = useState([]);
   const [accommodationStats, setAccommodationStats] = useState({
     totalNights: 0,
@@ -47,19 +43,19 @@ export function Dashboard() {
   useEffect(() => {
     fetchDashboardSummary();
     fetchUpcomingBookings();
-    fetchTodaysBookings();
     fetchAccommodationStats();
     fetchDetailedStats();
-  }, [selectedMonth, selectedYear]);
+  }, []);
 
   const fetchDashboardSummary = async () => {
     try {
-      const response = await fetch(`https://111-production-573e.up.railway.app/api/dashboard/summary?month=${selectedMonth}&year=${selectedYear}`);
+      const response = await fetch('http://localhost:5000/api/dashboard/summary');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
       setStats(data);
+      setRecentBookings(data.recentBookings || []);
     } catch (error) {
       console.error('Error fetching dashboard summary:', error);
     }
@@ -67,37 +63,20 @@ export function Dashboard() {
 
   const fetchUpcomingBookings = async () => {
     try {
-      console.log('Fetching upcoming bookings...');
-      const response = await fetch('https://111-production-573e.up.railway.app/api/dashboard/upcoming-bookings');
+      const response = await fetch('http://localhost:5000/api/dashboard/upcoming-bookings');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      console.log('Received upcoming bookings:', data);
       setUpcomingBookings(data);
     } catch (error) {
       console.error('Error fetching upcoming bookings:', error);
     }
   };
 
-  const fetchTodaysBookings = async () => {
-    try {
-      console.log('Fetching today\'s bookings...');
-      const response = await fetch('https://111-production-573e.up.railway.app/api/dashboard/todays-bookings');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      console.log('Received today\'s bookings:', data);
-      setTodaysBookings(data);
-    } catch (error) {
-      console.error('Error fetching today\'s bookings:', error);
-    }
-  };
-
   const fetchAccommodationStats = async () => {
     try {
-      const response = await fetch('https://111-production-573e.up.railway.app/api/dashboard/accommodation-stats');
+      const response = await fetch('http://localhost:5000/api/dashboard/accommodation-stats');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -110,7 +89,7 @@ export function Dashboard() {
 
   const fetchDetailedStats = async () => {
     try {
-      const response = await fetch('https://111-production-573e.up.railway.app/api/dashboard/stats');
+      const response = await fetch('http://localhost:5000/api/dashboard/stats');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -121,123 +100,110 @@ export function Dashboard() {
     }
   };
 
-  const getMonthName = (monthNumber) => {
-    const months = [
-      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
-    ];
-    return months[monthNumber - 1];
+  const getServiceIcon = (serviceType) => {
+    switch (serviceType) {
+      case 'Hotel': return <Hotel className="h-4 w-4 text-blue-600" />;
+      case 'Cabin': return <Home className="h-4 w-4 text-green-600" />;
+      case 'Vehicle': return <Car className="h-4 w-4 text-purple-600" />;
+      case 'Transfer': return <MapPin className="h-4 w-4 text-orange-600" />;
+      case 'Tour': return <Calendar className="h-4 w-4 text-red-600" />;
+      default: return <Calendar className="h-4 w-4 text-gray-600" />;
+    }
   };
 
-  // Format date to a more readable format
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Mevcut Değil';
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('tr-TR', options);
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'confirmed': return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'pending': return <Clock className="h-4 w-4 text-yellow-600" />;
+      case 'cancelled': return <XCircle className="h-4 w-4 text-red-600" />;
+      case 'completed': return <CheckCircle className="h-4 w-4 text-blue-600" />;
+      default: return <AlertCircle className="h-4 w-4 text-gray-600" />;
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'confirmed': return 'bg-green-100 text-green-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      case 'completed': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getDaysUntil = (dateString) => {
+    const today = new Date();
+    const targetDate = new Date(dateString);
+    const diffTime = targetDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Tomorrow';
+    if (diffDays < 0) return 'Past due';
+    return `${diffDays} days`;
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 lg:p-8 space-y-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Kontrol Paneli</h1>
-        <p className="text-gray-600">Turizm yönetim sisteminize hoş geldiniz</p>
-      </div>
-
-      {/* Month Selector */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="flex items-center gap-2">
-          <label htmlFor="month-select" className="text-sm font-medium">Ay:</label>
-          <Select 
-            value={selectedMonth.toString()} 
-            onValueChange={(value) => setSelectedMonth(parseInt(value))}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Ay seçin" />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                <SelectItem key={month} value={month.toString()}>
-                  {getMonthName(month)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <label htmlFor="year-select" className="text-sm font-medium">Yıl:</label>
-          <Select 
-            value={selectedYear.toString()} 
-            onValueChange={(value) => setSelectedYear(parseInt(value))}
-          >
-            <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder="Yıl seçin" />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map((year) => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-600 text-sm md:text-base">Welcome to your tourism management system</p>
       </div>
 
       {/* Main Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Yaklaşan Rezervasyonlar</CardTitle>
+            <CardTitle className="text-sm font-medium">Upcoming Bookings</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.upcomingBookingsCount}</div>
-            <p className="text-xs text-muted-foreground">Sonraki 7 gün</p>
+            <div className="text-2xl font-bold">{stats.upcomingBookings}</div>
+            <p className="text-xs text-muted-foreground">Next 7 days</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam Gelir</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${stats.totalRevenue ? stats.totalRevenue.toLocaleString() : '0'}</div>
-            <p className="text-xs text-muted-foreground">{getMonthName(selectedMonth)} {selectedYear}</p>
+            <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam Kar</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Profit</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${stats.totalProfit ? stats.totalProfit.toLocaleString() : '0'}</div>
-            <p className="text-xs text-muted-foreground">{getMonthName(selectedMonth)} {selectedYear}</p>
+            <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Aktif Müşteriler</CardTitle>
+            <CardTitle className="text-sm font-medium">Active Clients</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.activeClients}</div>
-            <p className="text-xs text-muted-foreground">Toplam kayıtlı</p>
+            <p className="text-xs text-muted-foreground">Total registered</p>
           </CardContent>
         </Card>
       </div>
 
       {/* System Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Toplam Müşteriler</p>
+                <p className="text-sm font-medium text-gray-600">Total Clients</p>
                 <p className="text-2xl font-bold">{detailedStats.totalCounts.clients}</p>
               </div>
               <Users className="h-8 w-8 text-blue-600" />
@@ -249,7 +215,7 @@ export function Dashboard() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Toplam Sürücüler</p>
+                <p className="text-sm font-medium text-gray-600">Total Drivers</p>
                 <p className="text-2xl font-bold">{detailedStats.totalCounts.drivers}</p>
               </div>
               <Users className="h-8 w-8 text-green-600" />
@@ -261,7 +227,7 @@ export function Dashboard() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Toplam Araçlar</p>
+                <p className="text-sm font-medium text-gray-600">Total Vehicles</p>
                 <p className="text-2xl font-bold">{detailedStats.totalCounts.vehicles}</p>
               </div>
               <Car className="h-8 w-8 text-purple-600" />
@@ -273,7 +239,7 @@ export function Dashboard() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Toplam Rezervasyonlar</p>
+                <p className="text-sm font-medium text-gray-600">Total Bookings</p>
                 <p className="text-2xl font-bold">{detailedStats.totalCounts.bookings}</p>
               </div>
               <Calendar className="h-8 w-8 text-orange-600" />
@@ -283,75 +249,199 @@ export function Dashboard() {
       </div>
 
       {/* Upcoming Bookings & Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Upcoming Bookings - Simplified to show only client name and arrival date */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        {/* Upcoming Bookings */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
               <Calendar className="h-5 w-5" />
-              Yaklaşan Rezervasyonlar (Sonraki 7 Gün)
+              Upcoming Bookings (Next 7 Days)
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4 max-h-96 overflow-y-auto">
-              {upcomingBookings && upcomingBookings.length > 0 ? (
+              {upcomingBookings.length > 0 ? (
                 upcomingBookings.map((booking) => (
-                  <div key={`upcoming-${booking.id}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <User className="h-5 w-5 text-blue-600" />
+                  <div key={booking.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3 mb-2 sm:mb-0">
+                      {getServiceIcon(booking.serviceType)}
                       <div>
-                        <p className="font-medium">{booking.client}</p>
+                        <p className="font-medium text-sm md:text-base">{booking.client}</p>
+                        <p className="text-xs text-gray-600">{booking.service}</p>
+                        {booking.isAccommodation && booking.hotelName && (
+                          <p className="text-xs text-blue-600">{booking.hotelName} • {booking.numNights} nights</p>
+                        )}
+                        <div className="flex items-center gap-2 mt-1">
+                          {getStatusIcon(booking.status)}
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
+                            {booking.status}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">{formatDate(booking.startDate)}</p>
+                    <div className="text-right sm:text-left">
+                      <p className="font-bold text-green-600 text-sm md:text-base">${booking.amount.toFixed(2)}</p>
+                      <p className="text-xs text-gray-500">{getDaysUntil(booking.startDate)}</p>
+                      <p className="text-xs text-gray-400">{booking.startDate}</p>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="text-center py-8">
                   <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Sonraki 7 gün içinde yaklaşan rezervasyon yok</p>
+                  <p className="text-gray-600 text-sm md:text-base">No upcoming bookings in the next 7 days</p>
                 </div>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Today's Bookings */}
+        {/* Recent Bookings */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
               <Clock className="h-5 w-5" />
-              Bugünün Rezervasyonları
+              Recent Bookings
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4 max-h-96 overflow-y-auto">
-              {todaysBookings.length > 0 ? (
-                todaysBookings.map((booking) => (
-                  <div key={`today-${booking.id}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <User className="h-5 w-5 text-blue-600" />
+              {recentBookings.length > 0 ? (
+                recentBookings.map((booking) => (
+                  <div key={booking.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3 mb-2 sm:mb-0">
+                      {getServiceIcon(booking.serviceType)}
                       <div>
-                        <p className="font-medium">{booking.client}</p>
-                        {booking.services && booking.services.map((service, idx) => (
-                          <p key={idx} className="text-xs text-gray-500">{service.serviceName} ({service.serviceType})</p>
-                        ))}
+                        <p className="font-medium text-sm md:text-base">{booking.client}</p>
+                        <p className="text-xs text-gray-600">{booking.service}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          {getStatusIcon(booking.status)}
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
+                            {booking.status}
+                          </span>
+                        </div>
                       </div>
+                    </div>
+                    <div className="text-right sm:text-left">
+                      <p className="font-bold text-green-600 text-sm md:text-base">${booking.amount.toFixed(2)}</p>
+                      <p className="text-xs text-gray-500">{booking.date}</p>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="text-center py-8">
                   <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Bugün için rezervasyon yok</p>
+                  <p className="text-gray-600 text-sm md:text-base">No recent bookings</p>
                 </div>
               )}
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Accommodation Stats */}
+      {accommodationStats.totalRevenue > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <Hotel className="h-5 w-5" />
+              Accommodation Statistics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm font-medium text-blue-600">Total Nights</p>
+                <p className="text-xl md:text-2xl font-bold text-blue-900">{accommodationStats.totalNights}</p>
+              </div>
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <p className="text-sm font-medium text-green-600">Revenue</p>
+                <p className="text-xl md:text-2xl font-bold text-green-900">${accommodationStats.totalRevenue.toFixed(2)}</p>
+              </div>
+              <div className="text-center p-4 bg-purple-50 rounded-lg">
+                <p className="text-sm font-medium text-purple-600">Profit</p>
+                <p className="text-xl md:text-2xl font-bold text-purple-900">${accommodationStats.totalProfit.toFixed(2)}</p>
+              </div>
+              <div className="text-center p-4 bg-orange-50 rounded-lg">
+                <p className="text-sm font-medium text-orange-600">Properties</p>
+                <p className="text-xl md:text-2xl font-bold text-orange-900">{Object.keys(accommodationStats.accommodationBreakdown).length}</p>
+              </div>
+            </div>
+
+            {Object.keys(accommodationStats.accommodationBreakdown).length > 0 && (
+              <div>
+                <h4 className="font-semibold mb-3 text-base md:text-lg">Top Properties</h4>
+                <div className="space-y-2">
+                  {Object.entries(accommodationStats.accommodationBreakdown)
+                    .sort(([,a], [,b]) => b.revenue - a.revenue)
+                    .slice(0, 5)
+                    .map(([name, stats]) => (
+                      <div key={name} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2 sm:mb-0">
+                          {stats.type === 'Hotel' ? <Hotel className="h-4 w-4 text-blue-600" /> : <Home className="h-4 w-4 text-green-600" />}
+                          <div>
+                            <p className="font-medium text-sm md:text-base">{name}</p>
+                            <p className="text-xs text-gray-600">{stats.bookings} bookings • {stats.nights} nights</p>
+                          </div>
+                        </div>
+                        <div className="text-right sm:text-left">
+                          <p className="font-bold text-green-600 text-sm md:text-base">${stats.revenue.toFixed(2)}</p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Booking Status Breakdown */}
+      {Object.keys(detailedStats.bookingStatusBreakdown).length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <AlertCircle className="h-5 w-5" />
+              Booking Status Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {Object.entries(detailedStats.bookingStatusBreakdown).map(([status, count]) => (
+                <div key={status} className="text-center p-3 rounded-lg" style={{ backgroundColor: getStatusColor(status).split(' ')[0].replace('bg-', '#') + '20' }}>
+                  <p className="text-xl md:text-2xl font-bold" style={{ color: getStatusColor(status).split(' ')[1].replace('text-', '') }}>{count}</p>
+                  <p className="text-sm font-medium text-gray-600 capitalize">{status}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Service Type Breakdown */}
+      {Object.keys(detailedStats.serviceTypeBreakdown).length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <Building2 className="h-5 w-5" />
+              Service Type Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {Object.entries(detailedStats.serviceTypeBreakdown).map(([type, count]) => (
+                <div key={type} className="text-center p-3 bg-gray-50 rounded-lg">
+                  <div className="flex justify-center mb-2">
+                    {getServiceIcon(type)}
+                  </div>
+                  <p className="text-xl md:text-2xl font-bold">{count}</p>
+                  <p className="text-sm font-medium text-gray-600 capitalize">{type}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

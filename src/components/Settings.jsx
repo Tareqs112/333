@@ -318,10 +318,6 @@ const Settings = () => {
                 </span>
                 <StatusBadge status={configStatus.meta_whatsapp} />
               </CardTitle>
-              <CardDescription>
-                Meta WhatsApp Business API ile doğrudan entegrasyon için gerekli bilgileri girin.
-                Bu ayarlar Twilio yerine Meta'nın resmi API'sini kullanmanızı sağlar.
-              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -411,17 +407,6 @@ const Settings = () => {
               <div className="bg-blue-50 p-4 rounded-lg">
                 <div className="flex items-start gap-2">
                   <Info className="w-5 h-5 text-blue-600 mt-0.5" />
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-blue-900">Kurulum Talimatları</h4>
-                    <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-                      <li>Meta Developer Console'a gidin ve bir Business App oluşturun</li>
-                      <li>WhatsApp ürününü uygulamanıza ekleyin</li>
-                      <li>Business Portfolio oluşturun veya mevcut olanı bağlayın</li>
-                      <li>Access Token oluşturun ve yukarıdaki alana girin</li>
-                      <li>Phone Number ID'yi WhatsApp API Setup sayfasından alın</li>
-                      <li>Webhook URL'ini sisteminizin /notifications/webhook endpoint'ine ayarlayın</li>
-                    </ol>
-                  </div>
                 </div>
               </div>
 
