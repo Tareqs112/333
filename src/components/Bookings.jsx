@@ -204,11 +204,17 @@ export function Bookings() {
 
       const data = await response.json();
       
-      // Update clients list
-      fetchClients();
+      // Show success message first
+      alert(`Client ${data.firstName} ${data.lastName} added successfully!`);
       
-      // Close modal
-      setShowAddClientModal(false);
+      // Update clients list and wait for it to complete
+      await fetchClients();
+      
+      // Update selected client in booking form
+      setNewBooking(prev => ({
+        ...prev,
+        clientId: data.id.toString()
+      }));
       
       // Reset new client form
       setNewClient({
@@ -217,18 +223,12 @@ export function Bookings() {
         email: '',
         phone: '',
         companyId: '',
-        PassportNumber:'',
+        PassportNumber: '',
         licenseNumber: ''
       });
       
-      // Update selected client in booking form
-      setNewBooking(prev => ({
-        ...prev,
-        clientId: data.id.toString()
-      }));
-
-      // Show success message
-      alert(`Client ${data.firstName} ${data.lastName} added successfully!`);
+      // Close modal last
+      setShowAddClientModal(false);
       
     } catch (error) {
       console.error('Error adding client:', error);
@@ -1018,10 +1018,10 @@ export function Bookings() {
                 <CardTitle>Client Information</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="col-span-full">
+                <div className="space-y-4">
+                  <div>
                     <Label htmlFor="clientId">Client *</Label>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 mb-4">
                       <select
                         id="clientId"
                         value={newBooking.clientId}
@@ -1039,31 +1039,35 @@ export function Bookings() {
                         type="button"
                         variant="outline"
                         onClick={() => setShowAddClientModal(true)}
-                        className="shrink-0"
+                        className="shrink-0 px-3"
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
-                  <div>
-                    <Label htmlFor="overall_startDate">Overall Start Date *</Label>
-                    <Input
-                      id="overall_startDate"
-                      type="date"
-                      value={newBooking.overall_startDate}
-                      onChange={(e) => setNewBooking(prev => ({ ...prev, overall_startDate: e.target.value }))}
-                    />
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="overall_startDate">Overall Start Date *</Label>
+                      <Input
+                        id="overall_startDate"
+                        type="date"
+                        value={newBooking.overall_startDate}
+                        onChange={(e) => setNewBooking(prev => ({ ...prev, overall_startDate: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="overall_endDate">Overall End Date *</Label>
+                      <Input
+                        id="overall_endDate"
+                        type="date"
+                        value={newBooking.overall_endDate}
+                        onChange={(e) => setNewBooking(prev => ({ ...prev, overall_endDate: e.target.value }))}
+                      />
+                    </div>
                   </div>
+                  
                   <div>
-                    <Label htmlFor="overall_endDate">Overall End Date *</Label>
-                    <Input
-                      id="overall_endDate"
-                      type="date"
-                      value={newBooking.overall_endDate}
-                      onChange={(e) => setNewBooking(prev => ({ ...prev, overall_endDate: e.target.value }))}
-                    />
-                  </div>
-                  <div className="col-span-full">
                     <Label htmlFor="bookingNotes">Booking Notes</Label>
                     <textarea
                       id="bookingNotes"
