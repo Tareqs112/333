@@ -183,7 +183,7 @@ export function Bookings() {
   const handleAddClient = async () => {
     // Validate required fields
     if (!newClient.firstName || !newClient.lastName) {
-      alert('Please fill in required fields (First Name and Last Name)');
+      alert('Lütfen gerekli alanları doldurun (Ad ve Soyad)');
       return;
     }
 
@@ -198,7 +198,7 @@ export function Bookings() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to add client');
+        throw new Error(errorData.error || 'Müşteri eklenemedi');
       }
 
       const data = await response.json();
@@ -226,11 +226,11 @@ export function Bookings() {
       }));
 
       // Show success message
-      alert(`Client ${data.firstName} ${data.lastName} added successfully!`);
+      alert(`Müşteri ${data.firstName} ${data.lastName} başarıyla eklendi!`);
       
     } catch (error) {
       console.error('Error adding client:', error);
-      alert('Error adding client: ' + error.message);
+      alert('Müşteri ekleme hatası: ' + error.message);
     }
   };
 
@@ -313,19 +313,19 @@ export function Bookings() {
     const isVehicle = isVehicleService(newService.serviceType);
     
     if (!newService.serviceType || !newService.serviceName || !newService.startDate || !newService.endDate) {
-      alert('Please fill in all required service fields.');
+      alert('Lütfen tüm gerekli hizmet alanlarını doldurun.');
       return;
     }
 
     if (isAccommodation) {
       if (!newService.hotelName || !newService.hotelCity || !newService.roomType || !newService.numNights || 
           !newService.costPerNight || !newService.sellingPricePerNight) {
-        alert('Please fill in all accommodation details including city name.');
+        alert('Lütfen şehir adı dahil tüm konaklama detaylarını doldurun.');
         return;
       }
     } else {
       if (!newService.costToCompany || !newService.sellingPrice) {
-        alert('Please fill in cost and selling price.');
+        alert('Lütfen maliyet ve satış fiyatını doldurun.');
         return;
       }
     }
@@ -370,12 +370,12 @@ export function Bookings() {
 
   const handleAddBooking = async () => {
     if (!newBooking.clientId || !newBooking.overall_startDate || !newBooking.overall_endDate) {
-      alert('Please fill in all required booking fields.');
+      alert('Lütfen tüm gerekli rezervasyon alanlarını doldurun.');
       return;
     }
 
     if (newBooking.services.length === 0) {
-      alert('Please add at least one service to the booking.');
+      alert('Lütfen rezervasyona en az bir hizmet ekleyin.');
       return;
     }
 
@@ -404,12 +404,12 @@ export function Bookings() {
       fetchBookings();
     } catch (error) {
       console.error('Error adding booking:', error);
-      alert('Error adding booking: ' + error.message);
+      alert('Rezervasyon ekleme hatası: ' + error.message);
     }
   };
 
   const handleDeleteBooking = async (id) => {
-    if (window.confirm('Are you sure you want to delete this booking?')) {
+    if (window.confirm('Bu rezervasyonu silmek istediğinizden emin misiniz?')) {
       try {
         const response = await fetch(`https://111-production-573e.up.railway.app/api/bookings/${id}`, {
           method: 'DELETE',
@@ -421,7 +421,7 @@ export function Bookings() {
         fetchBookings();
       } catch (error) {
         console.error('Error deleting booking:', error);
-        alert('Error deleting booking: ' + error.message);
+        alert('Rezervasyon silme hatası: ' + error.message);
       }
     }
   };
@@ -446,7 +446,7 @@ export function Bookings() {
         sellingPrice: service.sellingPrice ? service.sellingPrice.toString() : '',
         notes: service.notes || '',
         hotelName: service.hotelName || '',
-        hotelCity: service.hotelCity || '',
+        hotelCity: '',
         roomType: service.roomType || '',
         numNights: service.numNights ? service.numNights.toString() : '',
         costPerNight: service.costPerNight ? service.costPerNight.toString() : '',
@@ -461,17 +461,17 @@ export function Bookings() {
 
   const handleUpdateBooking = async () => {
     if (!editBookingData.clientId || !editBookingData.overall_startDate || !editBookingData.overall_endDate) {
-      alert('Please fill in all required booking fields.');
+      alert('Lütfen tüm gerekli rezervasyon alanlarını doldurun.');
       return;
     }
 
     if (editBookingData.services.length === 0) {
-      alert('Please add at least one service to the booking.');
+      alert('Lütfen rezervasyona en az bir hizmet ekleyin.');
       return;
     }
 
     try {
-      const response = await fetch(`https://111-production-573e.up.railway.app//${editingBooking.id}`, {
+      const response = await fetch(`https://111-production-573e.up.railway.app/api/bookings/${editingBooking.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -496,7 +496,7 @@ export function Bookings() {
       fetchBookings();
     } catch (error) {
       console.error('Error updating booking:', error);
-      alert('Error updating booking: ' + error.message);
+      alert('Rezervasyon güncelleme hatası: ' + error.message);
     }
   };
 
@@ -528,280 +528,264 @@ export function Bookings() {
     return (
       <Card className="mb-4">
         <CardHeader>
-          <CardTitle>Add Service</CardTitle>
+          <CardTitle>Hizmet Ekle</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="serviceType">Service Type *</Label>
+            <div className="col-span-1 md:col-span-2 lg:col-span-1">
+              <Label htmlFor="serviceType">Hizmet Türü *</Label>
               <select
                 id="serviceType"
                 value={newService.serviceType}
                 onChange={(e) => handleServiceTypeChange(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">Select service type</option>
-                {serviceTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
+                <option value="">Hizmet türü seçin</option>
+                {serviceTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
                 ))}
               </select>
             </div>
-            <div>
-              <Label htmlFor="serviceName">Service Name *</Label>
+
+            <div className="col-span-1">
+              <Label htmlFor="serviceName">Hizmet Adı *</Label>
               <Input
                 id="serviceName"
                 value={newService.serviceName}
                 onChange={(e) => setNewService(prev => ({ ...prev, serviceName: e.target.value }))}
-                placeholder="e.g., City Tour, Airport Transfer"
-              />
-            </div>
-            <div>
-              <Label htmlFor="serviceStartDate">Start Date *</Label>
-              <Input
-                id="serviceStartDate"
-                type="date"
-                value={newService.startDate}
-                onChange={(e) => setNewService(prev => ({ ...prev, startDate: e.target.value }))}
-              />
-            </div>
-            <div>
-              <Label htmlFor="serviceEndDate">End Date *</Label>
-              <Input
-                id="serviceEndDate"
-                type="date"
-                value={newService.endDate}
-                onChange={(e) => setNewService(prev => ({ ...prev, endDate: e.target.value }))}
+                placeholder="Hizmet adını girin"
+                className="w-full"
               />
             </div>
 
-            {/* Tour-specific fields */}
+            <div className="col-span-1">
+              <Label htmlFor="startDate">Başlangıç Tarihi *</Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={newService.startDate}
+                onChange={(e) => setNewService(prev => ({ ...prev, startDate: e.target.value }))}
+                className="w-full"
+              />
+            </div>
+
+            <div className="col-span-1">
+              <Label htmlFor="endDate">Bitiş Tarihi *</Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={newService.endDate}
+                onChange={(e) => setNewService(prev => ({ ...prev, endDate: e.target.value }))}
+                className="w-full"
+              />
+            </div>
+
             {isTour && (
               <>
-                <div>
-                  <Label htmlFor="startTime">Start Time</Label>
+                <div className="col-span-1">
+                  <Label htmlFor="startTime">Başlangıç Saati</Label>
                   <Input
                     id="startTime"
                     type="time"
                     value={newService.startTime}
                     onChange={(e) => setNewService(prev => ({ ...prev, startTime: e.target.value }))}
+                    className="w-full"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="endTime">End Time</Label>
+
+                <div className="col-span-1">
+                  <Label htmlFor="endTime">Bitiş Saati</Label>
                   <Input
                     id="endTime"
                     type="time"
                     value={newService.endTime}
                     onChange={(e) => setNewService(prev => ({ ...prev, endTime: e.target.value }))}
+                    className="w-full"
                   />
-                </div>
-                {/* Added driver and vehicle fields for tours */}
-                <div>
-                  <Label htmlFor="tourDriverId">Driver</Label>
-                  <select
-                    id="tourDriverId"
-                    value={newService.driverId}
-                    onChange={(e) => setNewService(prev => ({ ...prev, driverId: e.target.value }))}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                  >
-                    <option value="">Select driver</option>
-                    {drivers.map(driver => (
-                      <option key={driver.id} value={driver.id}>{driver.firstName} {driver.lastName}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <Label htmlFor="tourVehicleId">Vehicle</Label>
-                  <select
-                    id="tourVehicleId"
-                    value={newService.vehicleId}
-                    onChange={(e) => setNewService(prev => ({ ...prev, vehicleId: e.target.value }))}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                  >
-                    <option value="">Select vehicle</option>
-                    {vehicles.map(vehicle => (
-                      <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model}</option>
-                    ))}
-                  </select>
                 </div>
               </>
             )}
 
-            {/* Vehicle-specific fields */}
             {isVehicle && (
               <>
-                <div>
-                  <Label htmlFor="is_hourly">Hourly Rental?</Label>
-                  <div className="flex items-center mt-2">
-                    <input
-                      id="is_hourly"
-                      type="checkbox"
-                      checked={newService.is_hourly}
-                      onChange={(e) => setNewService(prev => ({ ...prev, is_hourly: e.target.checked }))}
-                      className="mr-2"
-                    />
-                    <span>Yes</span>
-                  </div>
+                <div className="col-span-1">
+                  <Label htmlFor="driverId">Şoför</Label>
+                  <select
+                    id="driverId"
+                    value={newService.driverId}
+                    onChange={(e) => setNewService(prev => ({ ...prev, driverId: e.target.value }))}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Şoför seçin</option>
+                    {drivers.map((driver) => (
+                      <option key={driver.id} value={driver.id}>
+                        {driver.firstName} {driver.lastName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                {newService.is_hourly && (
-                  <div>
-                    <Label htmlFor="hours">Number of Hours</Label>
-                    <Input
-                      id="hours"
-                      type="number"
-                      value={newService.hours}
-                      onChange={(e) => setNewService(prev => ({ ...prev, hours: e.target.value }))}
-                    />
-                  </div>
-                )}
-                <div>
-                  <Label htmlFor="with_driver">With Driver?</Label>
-                  <div className="flex items-center mt-2">
-                    <input
-                      id="with_driver_yes"
-                      type="radio"
-                      name="with_driver"
-                      checked={newService.with_driver === true}
-                      onChange={() => setNewService(prev => ({ ...prev, with_driver: true }))}
-                      className="mr-1"
-                    />
-                    <span className="mr-4">Yes</span>
-                    <input
-                      id="with_driver_no"
-                      type="radio"
-                      name="with_driver"
-                      checked={newService.with_driver === false}
-                      onChange={() => setNewService(prev => ({ ...prev, with_driver: false }))}
-                      className="mr-1"
-                    />
-                    <span>No</span>
-                  </div>
-                </div>
-                {newService.with_driver && (
-                  <div>
-                    <Label htmlFor="driverId">Driver</Label>
-                    <select
-                      id="driverId"
-                      value={newService.driverId}
-                      onChange={(e) => setNewService(prev => ({ ...prev, driverId: e.target.value }))}
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                    >
-                      <option value="">Select driver</option>
-                      {drivers.map(driver => (
-                        <option key={driver.id} value={driver.id}>{driver.firstName} {driver.lastName}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-                <div>
-                  <Label htmlFor="vehicleId">Vehicle</Label>
+
+                <div className="col-span-1">
+                  <Label htmlFor="vehicleId">Araç</Label>
                   <select
                     id="vehicleId"
                     value={newService.vehicleId}
                     onChange={(e) => setNewService(prev => ({ ...prev, vehicleId: e.target.value }))}
-                    className="w-full p-2 border border-gray-300 rounded-md"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="">Select vehicle</option>
-                    {vehicles.map(vehicle => (
-                      <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model}</option>
+                    <option value="">Araç seçin</option>
+                    {vehicles.map((vehicle) => (
+                      <option key={vehicle.id} value={vehicle.id}>
+                        {vehicle.make} {vehicle.model} ({vehicle.licensePlate})
+                      </option>
                     ))}
+                  </select>
+                </div>
+
+                <div className="col-span-1">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="is_hourly"
+                      checked={newService.is_hourly}
+                      onChange={(e) => setNewService(prev => ({ ...prev, is_hourly: e.target.checked }))}
+                      className="rounded"
+                    />
+                    <Label htmlFor="is_hourly">Saatlik Ücretlendirme</Label>
+                  </div>
+                </div>
+
+                {newService.is_hourly && (
+                  <div className="col-span-1">
+                    <Label htmlFor="hours">Saat Sayısı</Label>
+                    <Input
+                      id="hours"
+                      type="number"
+                      step="0.5"
+                      value={newService.hours}
+                      onChange={(e) => setNewService(prev => ({ ...prev, hours: e.target.value }))}
+                      placeholder="Saat sayısı"
+                      className="w-full"
+                    />
+                  </div>
+                )}
+
+                <div className="col-span-1">
+                  <Label htmlFor="with_driver">Şoförlü mü?</Label>
+                  <select
+                    id="with_driver"
+                    value={newService.with_driver === null ? '' : newService.with_driver.toString()}
+                    onChange={(e) => setNewService(prev => ({
+                      ...prev,
+                      with_driver: e.target.value === '' ? null : e.target.value === 'true'
+                    }))}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Seçin</option>
+                    <option value="true">Evet</option>
+                    <option value="false">Hayır</option>
                   </select>
                 </div>
               </>
             )}
 
-            {/* Hotel-specific fields */}
             {isAccommodation && (
               <>
-                <div>
-                  <Label htmlFor="hotelName">Hotel Name *</Label>
+                <div className="col-span-1">
+                  <Label htmlFor="hotelName">Otel/Konaklama Adı *</Label>
                   <Input
                     id="hotelName"
                     value={newService.hotelName}
                     onChange={(e) => setNewService(prev => ({ ...prev, hotelName: e.target.value }))}
-                    placeholder="Enter hotel name"
+                    placeholder="Otel adı"
+                    className="w-full"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="hotelCity">City Name *</Label>
+
+                <div className="col-span-1">
+                  <Label htmlFor="hotelCity">Şehir *</Label>
                   <Input
                     id="hotelCity"
                     value={newService.hotelCity}
                     onChange={(e) => setNewService(prev => ({ ...prev, hotelCity: e.target.value }))}
-                    placeholder="Enter city name"
+                    placeholder="Şehir adı"
+                    className="w-full"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="roomType">Room Type *</Label>
+
+                <div className="col-span-1">
+                  <Label htmlFor="roomType">Oda Tipi *</Label>
                   <Input
                     id="roomType"
                     value={newService.roomType}
                     onChange={(e) => setNewService(prev => ({ ...prev, roomType: e.target.value }))}
-                    placeholder="e.g., Double, Suite"
+                    placeholder="Oda tipi"
+                    className="w-full"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="numNights">Number of Nights</Label>
+
+                <div className="col-span-1">
+                  <Label htmlFor="numNights">Gece Sayısı *</Label>
                   <Input
                     id="numNights"
                     type="number"
                     value={newService.numNights}
                     onChange={(e) => setNewService(prev => ({ ...prev, numNights: e.target.value }))}
+                    placeholder="Gece sayısı"
+                    className="w-full"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="costPerNight">Cost per Night</Label>
+
+                <div className="col-span-1">
+                  <Label htmlFor="costPerNight">Gecelik Maliyet *</Label>
                   <Input
                     id="costPerNight"
                     type="number"
                     step="0.01"
                     value={newService.costPerNight}
                     onChange={(e) => setNewService(prev => ({ ...prev, costPerNight: e.target.value }))}
+                    placeholder="Gecelik maliyet"
+                    className="w-full"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="sellingPricePerNight">Selling Price per Night</Label>
+
+                <div className="col-span-1">
+                  <Label htmlFor="sellingPricePerNight">Gecelik Satış Fiyatı *</Label>
                   <Input
                     id="sellingPricePerNight"
                     type="number"
                     step="0.01"
                     value={newService.sellingPricePerNight}
                     onChange={(e) => setNewService(prev => ({ ...prev, sellingPricePerNight: e.target.value }))}
+                    placeholder="Gecelik satış fiyatı"
+                    className="w-full"
                   />
                 </div>
+
                 {newService.numNights && newService.costPerNight && newService.sellingPricePerNight && (
-                  <div className="col-span-3">
-                    <div className="bg-gray-50 p-3 rounded-md">
-                      <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-1 md:col-span-2 lg:col-span-3">
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h4 className="font-semibold mb-2">Toplam Hesaplama</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                         <div>
-                          <Label>Total Cost</Label>
-                          <p className="font-semibold">
-                            {calculateAccommodationTotals(
-                              newService.numNights,
-                              newService.costPerNight,
-                              newService.sellingPricePerNight
-                            ).totalCost.toFixed(2)}
-                          </p>
+                          <span className="text-gray-600">Toplam Maliyet:</span>
+                          <div className="font-semibold">
+                            ₺{calculateAccommodationTotals(newService.numNights, newService.costPerNight, newService.sellingPricePerNight).totalCost.toFixed(2)}
+                          </div>
                         </div>
                         <div>
-                          <Label>Total Selling Price</Label>
-                          <p className="font-semibold">
-                            {calculateAccommodationTotals(
-                              newService.numNights,
-                              newService.costPerNight,
-                              newService.sellingPricePerNight
-                            ).totalSelling.toFixed(2)}
-                          </p>
+                          <span className="text-gray-600">Toplam Satış:</span>
+                          <div className="font-semibold">
+                            ₺{calculateAccommodationTotals(newService.numNights, newService.costPerNight, newService.sellingPricePerNight).totalSelling.toFixed(2)}
+                          </div>
                         </div>
                         <div>
-                          <Label>Profit</Label>
-                          <p className="font-semibold">
-                            {calculateAccommodationTotals(
-                              newService.numNights,
-                              newService.costPerNight,
-                              newService.sellingPricePerNight
-                            ).profit.toFixed(2)}
-                          </p>
+                          <span className="text-gray-600">Kar:</span>
+                          <div className="font-semibold text-green-600">
+                            ₺{calculateAccommodationTotals(newService.numNights, newService.costPerNight, newService.sellingPricePerNight).profit.toFixed(2)}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -810,57 +794,53 @@ export function Bookings() {
               </>
             )}
 
-            {/* Common fields for non-accommodation services */}
             {!isAccommodation && (
               <>
-                <div>
-                  <Label htmlFor="costToCompany">Cost to Company</Label>
+                <div className="col-span-1">
+                  <Label htmlFor="costToCompany">Şirkete Maliyet *</Label>
                   <Input
                     id="costToCompany"
                     type="number"
                     step="0.01"
                     value={newService.costToCompany}
                     onChange={(e) => setNewService(prev => ({ ...prev, costToCompany: e.target.value }))}
+                    placeholder="Maliyet"
+                    className="w-full"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="sellingPrice">Selling Price</Label>
+
+                <div className="col-span-1">
+                  <Label htmlFor="sellingPrice">Satış Fiyatı *</Label>
                   <Input
                     id="sellingPrice"
                     type="number"
                     step="0.01"
                     value={newService.sellingPrice}
                     onChange={(e) => setNewService(prev => ({ ...prev, sellingPrice: e.target.value }))}
+                    placeholder="Satış fiyatı"
+                    className="w-full"
                   />
                 </div>
-                {newService.costToCompany && newService.sellingPrice && (
-                  <div>
-                    <Label>Profit</Label>
-                    <p className="font-semibold">
-                      {(parseFloat(newService.sellingPrice) - parseFloat(newService.costToCompany)).toFixed(2)}
-                    </p>
-                  </div>
-                )}
               </>
             )}
 
-            <div className="col-span-full">
-              <Label htmlFor="serviceNotes">Notes</Label>
+            <div className="col-span-1 md:col-span-2 lg:col-span-3">
+              <Label htmlFor="serviceNotes">Notlar</Label>
               <textarea
                 id="serviceNotes"
                 value={newService.notes}
                 onChange={(e) => setNewService(prev => ({ ...prev, notes: e.target.value }))}
-                className="w-full p-2 border border-gray-300 rounded-md"
-                rows="3"
-                placeholder="Additional notes about this service"
-              ></textarea>
+                placeholder="Hizmet notları"
+                rows={3}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
           </div>
 
-          <div className="mt-4 flex justify-end">
-            <Button onClick={addServiceToBooking}>
+          <div className="flex flex-col sm:flex-row gap-2 mt-4">
+            <Button onClick={addServiceToBooking} className="flex-1 sm:flex-none">
               <Plus className="h-4 w-4 mr-2" />
-              Add Service
+              Hizmeti Ekle
             </Button>
           </div>
         </CardContent>
@@ -868,794 +848,827 @@ export function Bookings() {
     );
   };
 
-  const renderServicesList = (services) => {
-    return services.length > 0 ? (
-      <div className="space-y-3 mt-4">
-        <h3 className="font-medium">Services</h3>
-        {services.map((service, index) => {
-          const isAccommodation = isAccommodationService(service.serviceType);
-          let totalCost = 0;
-          let totalSelling = 0;
-          let profit = 0;
-
-          if (isAccommodation) {
-            const totals = calculateAccommodationTotals(
-              service.numNights,
-              service.costPerNight,
-              service.sellingPricePerNight
-            );
-            totalCost = totals.totalCost;
-            totalSelling = totals.totalSelling;
-            profit = totals.profit;
-          } else {
-            totalCost = parseFloat(service.costToCompany) || 0;
-            totalSelling = parseFloat(service.sellingPrice) || 0;
-            profit = totalSelling - totalCost;
-          }
-
-          return (
-            <Card key={`service-${index}`} className="bg-gray-50">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      {getServiceIcon(service.serviceType)}
-                      <span className="font-medium">{service.serviceType}</span>
-                      <span className="text-gray-600">-</span>
-                      <span>{service.serviceName}</span>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-600">Dates:</span>
-                        <p>{service.startDate} to {service.endDate}</p>
-                      </div>
-                      
-                      {isAccommodation && (
-                        <>
-                          <div>
-                            <span className="text-gray-600">Hotel:</span>
-                            <p>{service.hotelName}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">City:</span>
-                            <p>{service.hotelCity}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">Room:</span>
-                            <p>{service.roomType} ({service.numNights} nights)</p>
-                          </div>
-                        </>
-                      )}
-                      
-                      <div>
-                        <span className="text-gray-600">Cost:</span>
-                        <p className="font-medium">${totalCost.toFixed(2)}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Selling:</span>
-                        <p className="font-medium">${totalSelling.toFixed(2)}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Profit:</span>
-                        <p className={`font-medium ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          ${profit.toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {service.notes && (
-                      <div className="mt-2">
-                        <span className="text-gray-600 text-sm">Notes:</span>
-                        <p className="text-sm">{service.notes}</p>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeServiceFromBooking(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-    ) : null;
-  };
-
-  const renderAddBookingForm = () => {
-    return (
-      <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Add New Booking</DialogTitle>
-            <DialogDescription>
-              Create a new booking by filling in the details below.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-6 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="clientId">Client *</Label>
-                <div className="flex gap-2">
-                  <select
-                    id="clientId"
-                    value={newBooking.clientId}
-                    onChange={(e) => setNewBooking(prev => ({ ...prev, clientId: e.target.value }))}
-                    className="flex-1 p-2 border border-gray-300 rounded-md"
-                  >
-                    <option value="">Select client</option>
-                    {clients.map(client => (
-                      <option key={`client-option-${client.id}`} value={client.id}>
-                        {client.firstName} {client.lastName}
-                      </option>
-                    ))}
-                  </select>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowAddClientModal(true)}
-                    className="px-3"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="overall_startDate">Overall Start Date *</Label>
-                <Input
-                  id="overall_startDate"
-                  type="date"
-                  value={newBooking.overall_startDate}
-                  onChange={(e) => setNewBooking(prev => ({ ...prev, overall_startDate: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label htmlFor="overall_endDate">Overall End Date *</Label>
-                <Input
-                  id="overall_endDate"
-                  type="date"
-                  value={newBooking.overall_endDate}
-                  onChange={(e) => setNewBooking(prev => ({ ...prev, overall_endDate: e.target.value }))}
-                />
-              </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="notes">Notes</Label>
-              <textarea
-                id="notes"
-                value={newBooking.notes}
-                onChange={(e) => setNewBooking(prev => ({ ...prev, notes: e.target.value }))}
-                className="w-full p-2 border border-gray-300 rounded-md"
-                rows="3"
-                placeholder="Additional booking notes"
-              ></textarea>
-            </div>
-            
-            {renderServiceForm()}
-            
-            {renderServicesList(newBooking.services)}
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddForm(false)}>Cancel</Button>
-            <Button onClick={handleAddBooking}>Create Booking</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
-  };
-
-  const renderEditBookingForm = () => {
-    return (
-      <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Booking</DialogTitle>
-            <DialogDescription>
-              Update the booking details below.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-6 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="editClientId">Client *</Label>
-                <select
-                  id="editClientId"
-                  value={editBookingData.clientId}
-                  onChange={(e) => setEditBookingData(prev => ({ ...prev, clientId: e.target.value }))}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                >
-                  <option value="">Select client</option>
-                  {clients.map(client => (
-                    <option key={`edit-client-option-${client.id}`} value={client.id}>
-                      {client.firstName} {client.lastName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="editOverallStartDate">Overall Start Date *</Label>
-                <Input
-                  id="editOverallStartDate"
-                  type="date"
-                  value={editBookingData.overall_startDate}
-                  onChange={(e) => setEditBookingData(prev => ({ ...prev, overall_startDate: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label htmlFor="editOverallEndDate">Overall End Date *</Label>
-                <Input
-                  id="editOverallEndDate"
-                  type="date"
-                  value={editBookingData.overall_endDate}
-                  onChange={(e) => setEditBookingData(prev => ({ ...prev, overall_endDate: e.target.value }))}
-                />
-              </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="editNotes">Notes</Label>
-              <textarea
-                id="editNotes"
-                value={editBookingData.notes}
-                onChange={(e) => setEditBookingData(prev => ({ ...prev, notes: e.target.value }))}
-                className="w-full p-2 border border-gray-300 rounded-md"
-                rows="3"
-                placeholder="Additional booking notes"
-              ></textarea>
-            </div>
-            
-            {/* Services list for editing */}
-            <div className="space-y-3">
-              <h3 className="font-medium">Services</h3>
-              {editBookingData.services.map((service, index) => (
-                <Card key={`edit-service-${index}`} className="bg-gray-50">
-                  <CardContent className="p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div>
-                        <Label>Service Type</Label>
-                        <select
-                          value={service.serviceType}
-                          onChange={(e) => {
-                            const updatedServices = [...editBookingData.services];
-                            updatedServices[index].serviceType = e.target.value;
-                            setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                          }}
-                          className="w-full p-2 border border-gray-300 rounded-md"
-                        >
-                          <option value="">Select service type</option>
-                          {serviceTypes.map(type => (
-                            <option key={type} value={type}>{type}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <Label>Service Name</Label>
-                        <Input
-                          value={service.serviceName}
-                          onChange={(e) => {
-                            const updatedServices = [...editBookingData.services];
-                            updatedServices[index].serviceName = e.target.value;
-                            setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <Label>Start Date</Label>
-                        <Input
-                          type="date"
-                          value={service.startDate}
-                          onChange={(e) => {
-                            const updatedServices = [...editBookingData.services];
-                            updatedServices[index].startDate = e.target.value;
-                            setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <Label>End Date</Label>
-                        <Input
-                          type="date"
-                          value={service.endDate}
-                          onChange={(e) => {
-                            const updatedServices = [...editBookingData.services];
-                            updatedServices[index].endDate = e.target.value;
-                            setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                          }}
-                        />
-                      </div>
-                      
-                      {/* Tour-specific fields for editing */}
-                      {isTourService(service.serviceType) && (
-                        <>
-                          <div>
-                            <Label>Start Time</Label>
-                            <Input
-                              type="time"
-                              value={service.startTime}
-                              onChange={(e) => {
-                                const updatedServices = [...editBookingData.services];
-                                updatedServices[index].startTime = e.target.value;
-                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <Label>End Time</Label>
-                            <Input
-                              type="time"
-                              value={service.endTime}
-                              onChange={(e) => {
-                                const updatedServices = [...editBookingData.services];
-                                updatedServices[index].endTime = e.target.value;
-                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <Label>Driver</Label>
-                            <select
-                              value={service.driverId}
-                              onChange={(e) => {
-                                const updatedServices = [...editBookingData.services];
-                                updatedServices[index].driverId = e.target.value;
-                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                              }}
-                              className="w-full p-2 border border-gray-300 rounded-md"
-                            >
-                              <option value="">Select driver</option>
-                              {drivers.map(driver => (
-                                <option key={driver.id} value={driver.id}>{driver.firstName} {driver.lastName}</option>
-                              ))}
-                            </select>
-                          </div>
-                          <div>
-                            <Label>Vehicle</Label>
-                            <select
-                              value={service.vehicleId}
-                              onChange={(e) => {
-                                const updatedServices = [...editBookingData.services];
-                                updatedServices[index].vehicleId = e.target.value;
-                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                              }}
-                              className="w-full p-2 border border-gray-300 rounded-md"
-                            >
-                              <option value="">Select vehicle</option>
-                              {vehicles.map(vehicle => (
-                                <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model}</option>
-                              ))}
-                            </select>
-                          </div>
-                        </>
-                      )}
-                      
-                      {/* Hotel-specific fields for editing */}
-                      {isAccommodationService(service.serviceType) && (
-                        <>
-                          <div>
-                            <Label>Hotel Name</Label>
-                            <Input
-                              value={service.hotelName}
-                              onChange={(e) => {
-                                const updatedServices = [...editBookingData.services];
-                                updatedServices[index].hotelName = e.target.value;
-                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <Label>City Name</Label>
-                            <Input
-                              value={service.hotelCity}
-                              onChange={(e) => {
-                                const updatedServices = [...editBookingData.services];
-                                updatedServices[index].hotelCity = e.target.value;
-                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <Label>Room Type</Label>
-                            <Input
-                              value={service.roomType}
-                              onChange={(e) => {
-                                const updatedServices = [...editBookingData.services];
-                                updatedServices[index].roomType = e.target.value;
-                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <Label>Number of Nights</Label>
-                            <Input
-                              type="number"
-                              value={service.numNights}
-                              onChange={(e) => {
-                                const updatedServices = [...editBookingData.services];
-                                updatedServices[index].numNights = e.target.value;
-                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <Label>Cost per Night</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={service.costPerNight}
-                              onChange={(e) => {
-                                const updatedServices = [...editBookingData.services];
-                                updatedServices[index].costPerNight = e.target.value;
-                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <Label>Selling Price per Night</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={service.sellingPricePerNight}
-                              onChange={(e) => {
-                                const updatedServices = [...editBookingData.services];
-                                updatedServices[index].sellingPricePerNight = e.target.value;
-                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                              }}
-                            />
-                          </div>
-                        </>
-                      )}
-                      
-                      {/* Common fields for non-accommodation services */}
-                      {!isAccommodationService(service.serviceType) && (
-                        <>
-                          <div>
-                            <Label>Cost to Company</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={service.costToCompany}
-                              onChange={(e) => {
-                                const updatedServices = [...editBookingData.services];
-                                updatedServices[index].costToCompany = e.target.value;
-                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <Label>Selling Price</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={service.sellingPrice}
-                              onChange={(e) => {
-                                const updatedServices = [...editBookingData.services];
-                                updatedServices[index].sellingPrice = e.target.value;
-                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                              }}
-                            />
-                          </div>
-                        </>
-                      )}
-                      
-                      <div className="col-span-full">
-                        <Label>Notes</Label>
-                        <textarea
-                          value={service.notes}
-                          onChange={(e) => {
-                            const updatedServices = [...editBookingData.services];
-                            updatedServices[index].notes = e.target.value;
-                            setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                          }}
-                          className="w-full p-2 border border-gray-300 rounded-md"
-                          rows="2"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4 flex justify-end">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          const updatedServices = editBookingData.services.filter((_, i) => i !== index);
-                          setEditBookingData(prev => ({ ...prev, services: updatedServices }));
-                        }}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <X className="h-4 w-4 mr-2" />
-                        Remove Service
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditForm(false)}>Cancel</Button>
-            <Button onClick={handleUpdateBooking}>Update Booking</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
-  };
-
-  // Add Client Modal
-  const renderAddClientModal = () => {
-    return (
-      <Dialog open={showAddClientModal} onOpenChange={setShowAddClientModal}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add New Client</DialogTitle>
-            <DialogDescription>
-              Create a new client to add to your booking.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="newClientFirstName">First Name *</Label>
-                <Input
-                  id="newClientFirstName"
-                  value={newClient.firstName}
-                  onChange={(e) => setNewClient(prev => ({ ...prev, firstName: e.target.value }))}
-                  placeholder="John"
-                />
-              </div>
-              <div>
-                <Label htmlFor="newClientLastName">Last Name *</Label>
-                <Input
-                  id="newClientLastName"
-                  value={newClient.lastName}
-                  onChange={(e) => setNewClient(prev => ({ ...prev, lastName: e.target.value }))}
-                  placeholder="Doe"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="newClientEmail">Email</Label>
-              <Input
-                id="newClientEmail"
-                type="email"
-                value={newClient.email}
-                onChange={(e) => setNewClient(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="john.doe@example.com"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="newClientPhone">Phone</Label>
-              <Input
-                id="newClientPhone"
-                value={newClient.phone}
-                onChange={(e) => setNewClient(prev => ({ ...prev, phone: e.target.value }))}
-                placeholder="+1234567890"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="newClientCompany">Company</Label>
-              <select
-                id="newClientCompany"
-                value={newClient.companyId}
-                onChange={(e) => setNewClient(prev => ({ ...prev, companyId: e.target.value }))}
-                className="w-full p-2 border border-gray-300 rounded-md"
-              >
-                <option value="">Select company (optional)</option>
-                {companies.map(company => (
-                  <option key={company.id} value={company.id}>{company.name}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div>
-              <Label htmlFor="newClientLicense">License Number</Label>
-              <Input
-                id="newClientLicense"
-                value={newClient.licenseNumber}
-                onChange={(e) => setNewClient(prev => ({ ...prev, licenseNumber: e.target.value }))}
-                placeholder="License number (optional)"
-              />
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddClientModal(false)}>Cancel</Button>
-            <Button onClick={handleAddClient}>Add Client</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
-  };
-
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Bookings Management</h1>
-        <Button onClick={() => setShowAddForm(true)}>
+    <div className="container mx-auto p-4 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">Rezervasyonlar</h1>
+        <Button onClick={() => setShowAddForm(true)} className="w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" />
-          Add Booking
+          Yeni Rezervasyon
         </Button>
       </div>
 
       {/* Search */}
-      <div className="mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Search bookings by client, service, or hotel..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Input
+          placeholder="Rezervasyon ara..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10"
+        />
       </div>
 
       {/* Bookings List */}
-      <div className="space-y-4">
-        {filteredBookings.length === 0 ? (
-          <Card>
-            <CardContent className="p-6 text-center">
-              <p className="text-gray-500">No bookings found.</p>
-            </CardContent>
-          </Card>
-        ) : (
-          filteredBookings.map((booking) => (
-            <Card key={`booking-${booking.id}`}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <User className="h-5 w-5" />
-                      {booking.client}
-                    </CardTitle>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {booking.overall_startDate} to {booking.overall_endDate}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
-                      {booking.status}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEditBooking(booking)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteBooking(booking.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        {filteredBookings.map((booking) => (
+          <Card key={booking.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex justify-between items-start">
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-lg truncate">{booking.client}</CardTitle>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {new Date(booking.overall_startDate).toLocaleDateString('tr-TR')} - {new Date(booking.overall_endDate).toLocaleDateString('tr-TR')}
+                  </p>
                 </div>
-              </CardHeader>
-              <CardContent>
-                {booking.services && booking.services.length > 0 && (
-                  <div className="space-y-3">
-                    <h4 className="font-medium">Services</h4>
-                    {booking.services.map((service, serviceIndex) => (
-                      <div key={`booking-${booking.id}-service-${serviceIndex}`} className="bg-gray-50 p-3 rounded-md">
-                        <div className="flex items-center gap-2 mb-2">
-                          {getServiceIcon(service.serviceType)}
-                          <span className="font-medium">{service.serviceType}</span>
-                          <span className="text-gray-600">-</span>
-                          <span>{service.serviceName}</span>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                          <div>
-                            <span className="text-gray-600">Dates:</span>
-                            <p>{service.startDate} to {service.endDate}</p>
-                          </div>
-                          
-                          {isAccommodationService(service.serviceType) && (
-                            <>
-                              <div>
-                                <span className="text-gray-600">Hotel:</span>
-                                <p>{service.hotelName}</p>
-                              </div>
-                              {service.hotelCity && (
-                                <div>
-                                  <span className="text-gray-600">City:</span>
-                                  <p>{service.hotelCity}</p>
-                                </div>
-                              )}
-                              <div>
-                                <span className="text-gray-600">Room:</span>
-                                <p>{service.roomType} ({service.numNights} nights)</p>
-                              </div>
-                            </>
-                          )}
-                          
-                          <div>
-                            <span className="text-gray-600">Cost:</span>
-                            <p className="font-medium">${service.totalCost ? service.totalCost.toFixed(2) : '0.00'}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">Selling:</span>
-                            <p className="font-medium">${service.totalSellingPrice ? service.totalSellingPrice.toFixed(2) : '0.00'}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">Profit:</span>
-                            <p className={`font-medium ${(service.profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              ${service.profit ? service.profit.toFixed(2) : '0.00'}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        {service.notes && (
-                          <div className="mt-2">
-                            <span className="text-gray-600 text-sm">Notes:</span>
-                            <p className="text-sm">{service.notes}</p>
-                          </div>
-                        )}
+                <div className="flex gap-2 ml-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEditBooking(booking)}
+                    className="p-2"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteBooking(booking.id)}
+                    className="p-2 text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {booking.services.map((service, index) => (
+                  <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex-shrink-0 mt-1">
+                      {getServiceIcon(service.serviceType)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm truncate">{service.serviceName}</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {service.serviceType}
+                        {service.hotelCity && ` - ${service.hotelCity}`}
                       </div>
-                    ))}
+                      <div className="text-xs text-gray-500">
+                        {new Date(service.startDate).toLocaleDateString('tr-TR')} - {new Date(service.endDate).toLocaleDateString('tr-TR')}
+                      </div>
+                      {service.startTime && service.endTime && (
+                        <div className="text-xs text-gray-500">
+                          {service.startTime} - {service.endTime}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
+                ))}
                 
                 {booking.notes && (
-                  <div className="mt-4 pt-4 border-t">
-                    <span className="text-gray-600 text-sm">Booking Notes:</span>
-                    <p className="text-sm">{booking.notes}</p>
+                  <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+                    <strong>Notlar:</strong> {booking.notes}
                   </div>
                 )}
-                
-                <div className="mt-4 pt-4 border-t">
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-600">Total Cost:</span>
-                      <p className="font-semibold text-lg">${booking.totalCost ? booking.totalCost.toFixed(2) : '0.00'}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {filteredBookings.length === 0 && (
+        <div className="text-center py-12">
+          <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Rezervasyon bulunamadı</h3>
+          <p className="text-gray-500">Yeni bir rezervasyon eklemek için yukarıdaki butonu kullanın.</p>
+        </div>
+      )}
+
+      {/* Add Booking Dialog */}
+      <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Yeni Rezervasyon Ekle</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Client Selection */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Müşteri Bilgileri</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="clientId">Müşteri *</Label>
+                    <div className="flex gap-2">
+                      <select
+                        id="clientId"
+                        value={newBooking.clientId}
+                        onChange={(e) => setNewBooking(prev => ({ ...prev, clientId: e.target.value }))}
+                        className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Müşteri seçin</option>
+                        {clients.map((client) => (
+                          <option key={client.id} value={client.id}>
+                            {client.firstName} {client.lastName}
+                          </option>
+                        ))}
+                      </select>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowAddClientModal(true)}
+                        className="px-3"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <div>
-                      <span className="text-gray-600">Total Selling:</span>
-                      <p className="font-semibold text-lg">${booking.totalSellingPrice ? booking.totalSellingPrice.toFixed(2) : '0.00'}</p>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Total Profit:</span>
-                      <p className={`font-semibold text-lg ${(booking.profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        ${booking.profit ? booking.profit.toFixed(2) : '0.00'}
-                      </p>
-                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="overall_startDate">Genel Başlangıç Tarihi *</Label>
+                    <Input
+                      id="overall_startDate"
+                      type="date"
+                      value={newBooking.overall_startDate}
+                      onChange={(e) => setNewBooking(prev => ({ ...prev, overall_startDate: e.target.value }))}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="overall_endDate">Genel Bitiş Tarihi *</Label>
+                    <Input
+                      id="overall_endDate"
+                      type="date"
+                      value={newBooking.overall_endDate}
+                      onChange={(e) => setNewBooking(prev => ({ ...prev, overall_endDate: e.target.value }))}
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <Label htmlFor="bookingNotes">Rezervasyon Notları</Label>
+                    <textarea
+                      id="bookingNotes"
+                      value={newBooking.notes}
+                      onChange={(e) => setNewBooking(prev => ({ ...prev, notes: e.target.value }))}
+                      placeholder="Rezervasyon notları"
+                      rows={3}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ))
-        )}
-      </div>
 
-      {/* Modals */}
-      {renderAddBookingForm()}
-      {renderEditBookingForm()}
-      {renderAddClientModal()}
+            {/* Service Form */}
+            {renderServiceForm()}
+
+            {/* Added Services */}
+            {newBooking.services.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Eklenen Hizmetler</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {newBooking.services.map((service, index) => (
+                      <div key={index} className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                        <div className="flex-shrink-0 mt-1">
+                          {getServiceIcon(service.serviceType)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium">{service.serviceName}</div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            {service.serviceType}
+                            {service.hotelCity && ` - ${service.hotelCity}`}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {new Date(service.startDate).toLocaleDateString('tr-TR')} - {new Date(service.endDate).toLocaleDateString('tr-TR')}
+                          </div>
+                          {service.startTime && service.endTime && (
+                            <div className="text-sm text-gray-500">
+                              {service.startTime} - {service.endTime}
+                            </div>
+                          )}
+                          {service.notes && (
+                            <div className="text-sm text-gray-600 mt-2">
+                              <strong>Notlar:</strong> {service.notes}
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeServiceFromBooking(index)}
+                          className="text-red-600 hover:text-red-700 p-2"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          <DialogFooter className="flex flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setShowAddForm(false)} className="w-full sm:w-auto">
+              İptal
+            </Button>
+            <Button onClick={handleAddBooking} className="w-full sm:w-auto">
+              Rezervasyon Ekle
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Client Modal */}
+      <Dialog open={showAddClientModal} onOpenChange={setShowAddClientModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Yeni Müşteri Ekle</DialogTitle>
+            <DialogDescription>
+              Yeni bir müşteri ekleyin ve otomatik olarak rezervasyonda seçin.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="firstName">Ad *</Label>
+                <Input
+                  id="firstName"
+                  value={newClient.firstName}
+                  onChange={(e) => setNewClient(prev => ({ ...prev, firstName: e.target.value }))}
+                  placeholder="Ad"
+                />
+              </div>
+              <div>
+                <Label htmlFor="lastName">Soyad *</Label>
+                <Input
+                  id="lastName"
+                  value={newClient.lastName}
+                  onChange={(e) => setNewClient(prev => ({ ...prev, lastName: e.target.value }))}
+                  placeholder="Soyad"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="email">E-posta</Label>
+              <Input
+                id="email"
+                type="email"
+                value={newClient.email}
+                onChange={(e) => setNewClient(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="E-posta adresi"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="phone">Telefon</Label>
+              <Input
+                id="phone"
+                value={newClient.phone}
+                onChange={(e) => setNewClient(prev => ({ ...prev, phone: e.target.value }))}
+                placeholder="Telefon numarası"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="companyId">Şirket</Label>
+              <select
+                id="companyId"
+                value={newClient.companyId}
+                onChange={(e) => setNewClient(prev => ({ ...prev, companyId: e.target.value }))}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Şirket seçin</option>
+                {companies.map((company) => (
+                  <option key={company.id} value={company.id}>
+                    {company.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <Label htmlFor="licenseNumber">Ehliyet Numarası</Label>
+              <Input
+                id="licenseNumber"
+                value={newClient.licenseNumber}
+                onChange={(e) => setNewClient(prev => ({ ...prev, licenseNumber: e.target.value }))}
+                placeholder="Ehliyet numarası"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="flex flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setShowAddClientModal(false)} className="w-full sm:w-auto">
+              İptal
+            </Button>
+            <Button onClick={handleAddClient} className="w-full sm:w-auto">
+              Müşteri Ekle
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Booking Dialog */}
+      <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Rezervasyonu Düzenle</DialogTitle>
+          </DialogHeader>
+          {editingBooking && (
+            <div className="space-y-6">
+              {/* Client Selection */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Müşteri Bilgileri</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="editClientId">Müşteri *</Label>
+                      <select
+                        id="editClientId"
+                        value={editBookingData.clientId}
+                        onChange={(e) => setEditBookingData(prev => ({ ...prev, clientId: e.target.value }))}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Müşteri seçin</option>
+                        {clients.map((client) => (
+                          <option key={client.id} value={client.id}>
+                            {client.firstName} {client.lastName}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="editOverall_startDate">Genel Başlangıç Tarihi *</Label>
+                      <Input
+                        id="editOverall_startDate"
+                        type="date"
+                        value={editBookingData.overall_startDate}
+                        onChange={(e) => setEditBookingData(prev => ({ ...prev, overall_startDate: e.target.value }))}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="editOverall_endDate">Genel Bitiş Tarihi *</Label>
+                      <Input
+                        id="editOverall_endDate"
+                        type="date"
+                        value={editBookingData.overall_endDate}
+                        onChange={(e) => setEditBookingData(prev => ({ ...prev, overall_endDate: e.target.value }))}
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <Label htmlFor="editBookingNotes">Rezervasyon Notları</Label>
+                      <textarea
+                        id="editBookingNotes"
+                        value={editBookingData.notes}
+                        onChange={(e) => setEditBookingData(prev => ({ ...prev, notes: e.target.value }))}
+                        placeholder="Rezervasyon notları"
+                        rows={3}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Edit Services */}
+              <Card className="mb-4">
+                <CardHeader>
+                  <CardTitle>Hizmetleri Düzenle</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {editBookingData.services.map((service, serviceIndex) => (
+                      <div key={serviceIndex} className="p-4 border rounded-lg space-y-4 relative">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditBookingData(prev => ({
+                              ...prev,
+                              services: prev.services.filter((_, i) => i !== serviceIndex)
+                            }));
+                          }}
+                          className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div className="col-span-1 md:col-span-2 lg:col-span-1">
+                            <Label htmlFor={`editServiceType-${serviceIndex}`}>Hizmet Türü *</Label>
+                            <select
+                              id={`editServiceType-${serviceIndex}`}
+                              value={service.serviceType}
+                              onChange={(e) => {
+                                const updatedServices = [...editBookingData.services];
+                                updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], serviceType: e.target.value };
+                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                              }}
+                              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                              <option value="">Hizmet türü seçin</option>
+                              {serviceTypes.map((type) => (
+                                <option key={type} value={type}>
+                                  {type}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="col-span-1">
+                            <Label htmlFor={`editServiceName-${serviceIndex}`}>Hizmet Adı *</Label>
+                            <Input
+                              id={`editServiceName-${serviceIndex}`}
+                              value={service.serviceName}
+                              onChange={(e) => {
+                                const updatedServices = [...editBookingData.services];
+                                updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], serviceName: e.target.value };
+                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                              }}
+                              placeholder="Hizmet adını girin"
+                              className="w-full"
+                            />
+                          </div>
+
+                          <div className="col-span-1">
+                            <Label htmlFor={`editStartDate-${serviceIndex}`}>Başlangıç Tarihi *</Label>
+                            <Input
+                              id={`editStartDate-${serviceIndex}`}
+                              type="date"
+                              value={service.startDate}
+                              onChange={(e) => {
+                                const updatedServices = [...editBookingData.services];
+                                updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], startDate: e.target.value };
+                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                              }}
+                              className="w-full"
+                            />
+                          </div>
+
+                          <div className="col-span-1">
+                            <Label htmlFor={`editEndDate-${serviceIndex}`}>Bitiş Tarihi *</Label>
+                            <Input
+                              id={`editEndDate-${serviceIndex}`}
+                              type="date"
+                              value={service.endDate}
+                              onChange={(e) => {
+                                const updatedServices = [...editBookingData.services];
+                                updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], endDate: e.target.value };
+                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                              }}
+                              className="w-full"
+                            />
+                          </div>
+
+                          {isTourService(service.serviceType) && (
+                            <>
+                              <div className="col-span-1">
+                                <Label htmlFor={`editStartTime-${serviceIndex}`}>Başlangıç Saati</Label>
+                                <Input
+                                  id={`editStartTime-${serviceIndex}`}
+                                  type="time"
+                                  value={service.startTime}
+                                  onChange={(e) => {
+                                    const updatedServices = [...editBookingData.services];
+                                    updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], startTime: e.target.value };
+                                    setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                                  }}
+                                  className="w-full"
+                                />
+                              </div>
+
+                              <div className="col-span-1">
+                                <Label htmlFor={`editEndTime-${serviceIndex}`}>Bitiş Saati</Label>
+                                <Input
+                                  id={`editEndTime-${serviceIndex}`}
+                                  type="time"
+                                  value={service.endTime}
+                                  onChange={(e) => {
+                                    const updatedServices = [...editBookingData.services];
+                                    updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], endTime: e.target.value };
+                                    setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                                  }}
+                                  className="w-full"
+                                />
+                              </div>
+                            </>
+                          )}
+
+                          {isVehicleService(service.serviceType) && (
+                            <>
+                              <div className="col-span-1">
+                                <Label htmlFor={`editDriverId-${serviceIndex}`}>Şoför</Label>
+                                <select
+                                  id={`editDriverId-${serviceIndex}`}
+                                  value={service.driverId}
+                                  onChange={(e) => {
+                                    const updatedServices = [...editBookingData.services];
+                                    updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], driverId: e.target.value };
+                                    setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                                  }}
+                                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                  <option value="">Şoför seçin</option>
+                                  {drivers.map((driver) => (
+                                    <option key={driver.id} value={driver.id}>
+                                      {driver.firstName} {driver.lastName}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div className="col-span-1">
+                                <Label htmlFor={`editVehicleId-${serviceIndex}`}>Araç</Label>
+                                <select
+                                  id={`editVehicleId-${serviceIndex}`}
+                                  value={service.vehicleId}
+                                  onChange={(e) => {
+                                    const updatedServices = [...editBookingData.services];
+                                    updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], vehicleId: e.target.value };
+                                    setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                                  }}
+                                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                  <option value="">Araç seçin</option>
+                                  {vehicles.map((vehicle) => (
+                                    <option key={vehicle.id} value={vehicle.id}>
+                                      {vehicle.make} {vehicle.model} ({vehicle.licensePlate})
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div className="col-span-1">
+                                <div className="flex items-center space-x-2">
+                                  <input
+                                    type="checkbox"
+                                    id={`editIsHourly-${serviceIndex}`}
+                                    checked={service.is_hourly}
+                                    onChange={(e) => {
+                                      const updatedServices = [...editBookingData.services];
+                                      updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], is_hourly: e.target.checked };
+                                      setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                                    }}
+                                    className="rounded"
+                                  />
+                                  <Label htmlFor={`editIsHourly-${serviceIndex}`}>Saatlik Ücretlendirme</Label>
+                                </div>
+                              </div>
+
+                              {service.is_hourly && (
+                                <div className="col-span-1">
+                                  <Label htmlFor={`editHours-${serviceIndex}`}>Saat Sayısı</Label>
+                                  <Input
+                                    id={`editHours-${serviceIndex}`}
+                                    type="number"
+                                    step="0.5"
+                                    value={service.hours}
+                                    onChange={(e) => {
+                                      const updatedServices = [...editBookingData.services];
+                                      updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], hours: e.target.value };
+                                      setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                                    }}
+                                    placeholder="Saat sayısı"
+                                    className="w-full"
+                                  />
+                                </div>
+                              )}
+
+                              <div className="col-span-1">
+                                <Label htmlFor={`editWithDriver-${serviceIndex}`}>Şoförlü mü?</Label>
+                                <select
+                                  id={`editWithDriver-${serviceIndex}`}
+                                  value={service.with_driver === null ? '' : service.with_driver.toString()}
+                                  onChange={(e) => {
+                                    const updatedServices = [...editBookingData.services];
+                                    updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], with_driver: e.target.value === '' ? null : e.target.value === 'true' };
+                                    setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                                  }}
+                                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                  <option value="">Seçin</option>
+                                  <option value="true">Evet</option>
+                                  <option value="false">Hayır</option>
+                                </select>
+                              </div>
+                            </>
+                          )}
+
+                          {isAccommodationService(service.serviceType) && (
+                            <>
+                              <div className="col-span-1">
+                                <Label htmlFor={`editHotelName-${serviceIndex}`}>Otel/Konaklama Adı *</Label>
+                                <Input
+                                  id={`editHotelName-${serviceIndex}`}
+                                  value={service.hotelName}
+                                  onChange={(e) => {
+                                    const updatedServices = [...editBookingData.services];
+                                    updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], hotelName: e.target.value };
+                                    setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                                  }}
+                                  placeholder="Otel adı"
+                                  className="w-full"
+                                />
+                              </div>
+
+                              <div className="col-span-1">
+                                <Label htmlFor={`editHotelCity-${serviceIndex}`}>Şehir *</Label>
+                                <Input
+                                  id={`editHotelCity-${serviceIndex}`}
+                                  value={service.hotelCity}
+                                  onChange={(e) => {
+                                    const updatedServices = [...editBookingData.services];
+                                    updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], hotelCity: e.target.value };
+                                    setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                                  }}
+                                  placeholder="Şehir adı"
+                                  className="w-full"
+                                />
+                              </div>
+
+                              <div className="col-span-1">
+                                <Label htmlFor={`editRoomType-${serviceIndex}`}>Oda Tipi *</Label>
+                                <Input
+                                  id={`editRoomType-${serviceIndex}`}
+                                  value={service.roomType}
+                                  onChange={(e) => {
+                                    const updatedServices = [...editBookingData.services];
+                                    updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], roomType: e.target.value };
+                                    setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                                  }}
+                                  placeholder="Oda tipi"
+                                  className="w-full"
+                                />
+                              </div>
+
+                              <div className="col-span-1">
+                                <Label htmlFor={`editNumNights-${serviceIndex}`}>Gece Sayısı *</Label>
+                                <Input
+                                  id={`editNumNights-${serviceIndex}`}
+                                  type="number"
+                                  value={service.numNights}
+                                  onChange={(e) => {
+                                    const updatedServices = [...editBookingData.services];
+                                    updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], numNights: e.target.value };
+                                    setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                                  }}
+                                  placeholder="Gece sayısı"
+                                  className="w-full"
+                                />
+                              </div>
+
+                              <div className="col-span-1">
+                                <Label htmlFor={`editCostPerNight-${serviceIndex}`}>Gecelik Maliyet *</Label>
+                                <Input
+                                  id={`editCostPerNight-${serviceIndex}`}
+                                  type="number"
+                                  step="0.01"
+                                  value={service.costPerNight}
+                                  onChange={(e) => {
+                                    const updatedServices = [...editBookingData.services];
+                                    updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], costPerNight: e.target.value };
+                                    setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                                  }}
+                                  placeholder="Gecelik maliyet"
+                                  className="w-full"
+                                />
+                              </div>
+
+                              <div className="col-span-1">
+                                <Label htmlFor={`editSellingPricePerNight-${serviceIndex}`}>Gecelik Satış Fiyatı *</Label>
+                                <Input
+                                  id={`editSellingPricePerNight-${serviceIndex}`}
+                                  type="number"
+                                  step="0.01"
+                                  value={service.sellingPricePerNight}
+                                  onChange={(e) => {
+                                    const updatedServices = [...editBookingData.services];
+                                    updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], sellingPricePerNight: e.target.value };
+                                    setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                                  }}
+                                  placeholder="Gecelik satış fiyatı"
+                                  className="w-full"
+                                />
+                              </div>
+
+                              {service.numNights && service.costPerNight && service.sellingPricePerNight && (
+                                <div className="col-span-1 md:col-span-2 lg:col-span-3">
+                                  <div className="bg-gray-50 p-4 rounded-lg">
+                                    <h4 className="font-semibold mb-2">Toplam Hesaplama</h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                                      <div>
+                                        <span className="text-gray-600">Toplam Maliyet:</span>
+                                        <div className="font-semibold">
+                                          ₺{calculateAccommodationTotals(service.numNights, service.costPerNight, service.sellingPricePerNight).totalCost.toFixed(2)}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-600">Toplam Satış:</span>
+                                        <div className="font-semibold">
+                                          ₺{calculateAccommodationTotals(service.numNights, service.costPerNight, service.sellingPricePerNight).totalSelling.toFixed(2)}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-600">Kar:</span>
+                                        <div className="font-semibold text-green-600">
+                                          ₺{calculateAccommodationTotals(service.numNights, service.costPerNight, service.sellingPricePerNight).profit.toFixed(2)}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          )}
+
+                          {!isAccommodationService(service.serviceType) && (
+                            <>
+                              <div className="col-span-1">
+                                <Label htmlFor={`editCostToCompany-${serviceIndex}`}>Şirkete Maliyet *</Label>
+                                <Input
+                                  id={`editCostToCompany-${serviceIndex}`}
+                                  type="number"
+                                  step="0.01"
+                                  value={service.costToCompany}
+                                  onChange={(e) => {
+                                    const updatedServices = [...editBookingData.services];
+                                    updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], costToCompany: e.target.value };
+                                    setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                                  }}
+                                  placeholder="Maliyet"
+                                  className="w-full"
+                                />
+                              </div>
+
+                              <div className="col-span-1">
+                                <Label htmlFor={`editSellingPrice-${serviceIndex}`}>Satış Fiyatı *</Label>
+                                <Input
+                                  id={`editSellingPrice-${serviceIndex}`}
+                                  type="number"
+                                  step="0.01"
+                                  value={service.sellingPrice}
+                                  onChange={(e) => {
+                                    const updatedServices = [...editBookingData.services];
+                                    updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], sellingPrice: e.target.value };
+                                    setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                                  }}
+                                  placeholder="Satış fiyatı"
+                                  className="w-full"
+                                />
+                              </div>
+                            </>
+                          )}
+
+                          <div className="col-span-1 md:col-span-2 lg:col-span-3">
+                            <Label htmlFor={`editServiceNotes-${serviceIndex}`}>Notlar</Label>
+                            <textarea
+                              id={`editServiceNotes-${serviceIndex}`}
+                              value={service.notes}
+                              onChange={(e) => {
+                                const updatedServices = [...editBookingData.services];
+                                updatedServices[serviceIndex] = { ...updatedServices[serviceIndex], notes: e.target.value };
+                                setEditBookingData(prev => ({ ...prev, services: updatedServices }));
+                              }}
+                              placeholder="Hizmet notları"
+                              rows={3}
+                              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                <Button variant="outline" onClick={() => setShowEditForm(false)} className="w-full sm:w-auto">
+                  İptal
+                </Button>
+                <Button onClick={handleUpdateBooking} className="w-full sm:w-auto">
+                  Rezervasyonu Güncelle
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
 
