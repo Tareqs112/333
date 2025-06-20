@@ -137,62 +137,62 @@ export function Dashboard() {
     const diffTime = targetDate - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Tomorrow';
-    if (diffDays < 0) return 'Past due';
-    return `${diffDays} days`;
+    if (diffDays === 0) return 'Bugün';
+    if (diffDays === 1) return 'Yarın';
+    if (diffDays < 0) return 'Süresi geçti';
+    return `${diffDays} gün`;
   };
 
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
       <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 text-sm md:text-base">Welcome to your tourism management system</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Kontrol Paneli</h1>
+        <p className="text-gray-600 text-sm md:text-base">Turizm yönetim sisteminize hoş geldiniz</p>
       </div>
 
       {/* Main Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Upcoming Bookings</CardTitle>
+            <CardTitle className="text-sm font-medium">Yaklaşan Rezervasyonlar</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.upcomingBookings}</div>
-            <p className="text-xs text-muted-foreground">Next 7 days</p>
+            <p className="text-xs text-muted-foreground">Sonraki 7 gün</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Toplam Gelir</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${stats.totalRevenue ? stats.totalRevenue.toLocaleString() : '0'}</div>
-            <p className="text-xs text-muted-foreground">This month</p>
+            <p className="text-xs text-muted-foreground">Bu ay</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Profit</CardTitle>
+            <CardTitle className="text-sm font-medium">Toplam Kar</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${stats.totalProfit ? stats.totalProfit.toLocaleString() : '0'}</div>
-            <p className="text-xs text-muted-foreground">This month</p>
+            <p className="text-xs text-muted-foreground">Bu ay</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Clients</CardTitle>
+            <CardTitle className="text-sm font-medium">Aktif Müşteriler</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.activeClients}</div>
-            <p className="text-xs text-muted-foreground">Total registered</p>
+            <p className="text-xs text-muted-foreground">Toplam kayıtlı</p>
           </CardContent>
         </Card>
       </div>
@@ -203,7 +203,7 @@ export function Dashboard() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Clients</p>
+                <p className="text-sm font-medium text-gray-600">Toplam Müşteriler</p>
                 <p className="text-2xl font-bold">{detailedStats.totalCounts.clients}</p>
               </div>
               <Users className="h-8 w-8 text-blue-600" />
@@ -215,7 +215,7 @@ export function Dashboard() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Drivers</p>
+                <p className="text-sm font-medium text-gray-600">Toplam Şoförler</p>
                 <p className="text-2xl font-bold">{detailedStats.totalCounts.drivers}</p>
               </div>
               <Users className="h-8 w-8 text-green-600" />
@@ -227,7 +227,7 @@ export function Dashboard() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Vehicles</p>
+                <p className="text-sm font-medium text-gray-600">Toplam Araçlar</p>
                 <p className="text-2xl font-bold">{detailedStats.totalCounts.vehicles}</p>
               </div>
               <Car className="h-8 w-8 text-purple-600" />
@@ -239,7 +239,7 @@ export function Dashboard() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Bookings</p>
+                <p className="text-sm font-medium text-gray-600">Toplam Rezervasyonlar</p>
                 <p className="text-2xl font-bold">{detailedStats.totalCounts.bookings}</p>
               </div>
               <Calendar className="h-8 w-8 text-orange-600" />
@@ -255,7 +255,7 @@ export function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base md:text-lg">
               <Calendar className="h-5 w-5" />
-              Upcoming Bookings (Next 7 Days)
+              Yaklaşan Rezervasyonlar (Sonraki 7 Gün)
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -269,7 +269,7 @@ export function Dashboard() {
                         <p className="font-medium text-sm md:text-base">{booking.client}</p>
                         <p className="text-xs text-gray-600">{booking.service}</p>
                         {booking.isAccommodation && booking.hotelName && (
-                          <p className="text-xs text-blue-600">{booking.hotelName} • {booking.numNights} nights</p>
+                          <p className="text-xs text-blue-600">{booking.hotelName} • {booking.numNights} gece</p>
                         )}
                         <div className="flex items-center gap-2 mt-1">
                           {getStatusIcon(booking.status)}
@@ -289,7 +289,7 @@ export function Dashboard() {
               ) : (
                 <div className="text-center py-8">
                   <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 text-sm md:text-base">No upcoming bookings in the next 7 days</p>
+                  <p className="text-gray-600 text-sm md:text-base">Önümüzdeki 7 gün içinde yaklaşan rezervasyon bulunmamaktadır</p>
                 </div>
               )}
             </div>
@@ -301,7 +301,7 @@ export function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base md:text-lg">
               <Clock className="h-5 w-5" />
-              Recent Bookings
+              Son Rezervasyonlar
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -331,7 +331,7 @@ export function Dashboard() {
               ) : (
                 <div className="text-center py-8">
                   <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 text-sm md:text-base">No recent bookings</p>
+                  <p className="text-gray-600 text-sm md:text-base">Yakın zamanda rezervasyon bulunmamaktadır</p>
                 </div>
               )}
             </div>
@@ -345,32 +345,32 @@ export function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base md:text-lg">
               <Hotel className="h-5 w-5" />
-              Accommodation Statistics
+              Konaklama İstatistikleri
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm font-medium text-blue-600">Total Nights</p>
+                <p className="text-sm font-medium text-blue-600">Toplam Gece</p>
                 <p className="text-xl md:text-2xl font-bold text-blue-900">{accommodationStats.totalNights}</p>
               </div>
               <div className="text-center p-4 bg-green-50 rounded-lg">
-                <p className="text-sm font-medium text-green-600">Revenue</p>
+                <p className="text-sm font-medium text-green-600">Gelir</p>
                 <p className="text-xl md:text-2xl font-bold text-green-900">${accommodationStats.totalRevenue.toFixed(2)}</p>
               </div>
               <div className="text-center p-4 bg-purple-50 rounded-lg">
-                <p className="text-sm font-medium text-purple-600">Profit</p>
+                <p className="text-sm font-medium text-purple-600">Kar</p>
                 <p className="text-xl md:text-2xl font-bold text-purple-900">${accommodationStats.totalProfit.toFixed(2)}</p>
               </div>
               <div className="text-center p-4 bg-orange-50 rounded-lg">
-                <p className="text-sm font-medium text-orange-600">Properties</p>
+                <p className="text-sm font-medium text-orange-600">Mülkler</p>
                 <p className="text-xl md:text-2xl font-bold text-orange-900">{Object.keys(accommodationStats.accommodationBreakdown).length}</p>
               </div>
             </div>
 
             {Object.keys(accommodationStats.accommodationBreakdown).length > 0 && (
               <div>
-                <h4 className="font-semibold mb-3 text-base md:text-lg">Top Properties</h4>
+                <h4 className="font-semibold mb-3 text-base md:text-lg">En İyi Mülkler</h4>
                 <div className="space-y-2">
                   {Object.entries(accommodationStats.accommodationBreakdown)
                     .sort(([,a], [,b]) => b.revenue - a.revenue)
@@ -381,11 +381,12 @@ export function Dashboard() {
                           {stats.type === 'Hotel' ? <Hotel className="h-4 w-4 text-blue-600" /> : <Home className="h-4 w-4 text-green-600" />}
                           <div>
                             <p className="font-medium text-sm md:text-base">{name}</p>
-                            <p className="text-xs text-gray-600">{stats.bookings} bookings • {stats.nights} nights</p>
+                            <p className="text-xs text-gray-600">{stats.bookings} rezervasyon • {stats.nights} gece</p>
                           </div>
                         </div>
                         <div className="text-right sm:text-left">
                           <p className="font-bold text-green-600 text-sm md:text-base">${stats.revenue.toFixed(2)}</p>
+                          <p className="text-xs text-gray-500">${stats.profit.toFixed(2)} kar</p>
                         </div>
                       </div>
                     ))}
@@ -401,16 +402,19 @@ export function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-              <AlertCircle className="h-5 w-5" />
-              Booking Status Breakdown
+              <CheckCircle className="h-5 w-5" />
+              Rezervasyon Durum Dağılımı
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {Object.entries(detailedStats.bookingStatusBreakdown).map(([status, count]) => (
-                <div key={status} className="text-center p-3 rounded-lg" style={{ backgroundColor: getStatusColor(status).split(' ')[0].replace('bg-', '#') + '20' }}>
-                  <p className="text-xl md:text-2xl font-bold" style={{ color: getStatusColor(status).split(' ')[1].replace('text-', '') }}>{count}</p>
+                <div key={status} className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-center mb-2">
+                    {getStatusIcon(status)}
+                  </div>
                   <p className="text-sm font-medium text-gray-600 capitalize">{status}</p>
+                  <p className="text-xl md:text-2xl font-bold">{count}</p>
                 </div>
               ))}
             </div>
@@ -424,18 +428,18 @@ export function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base md:text-lg">
               <Building2 className="h-5 w-5" />
-              Service Type Breakdown
+              Hizmet Türü Dağılımı
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {Object.entries(detailedStats.serviceTypeBreakdown).map(([type, count]) => (
-                <div key={type} className="text-center p-3 bg-gray-50 rounded-lg">
-                  <div className="flex justify-center mb-2">
-                    {getServiceIcon(type)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.entries(detailedStats.serviceTypeBreakdown).map(([serviceType, count]) => (
+                <div key={serviceType} className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-center mb-2">
+                    {getServiceIcon(serviceType)}
                   </div>
+                  <p className="text-sm font-medium text-gray-600">{serviceType}</p>
                   <p className="text-xl md:text-2xl font-bold">{count}</p>
-                  <p className="text-sm font-medium text-gray-600 capitalize">{type}</p>
                 </div>
               ))}
             </div>
