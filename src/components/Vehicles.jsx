@@ -48,36 +48,39 @@ export function Vehicles() {
   const fetchVehicles = async () => {
     try {
       const response = await fetch('https://111-production-573e.up.railway.app/api/vehicles');
-      if (response.ok) {
-        const data = await response.json();
-        setVehicles(data);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      const data = await response.json();
+      setVehicles(data);
     } catch (error) {
-      console.error('Error fetching vehicles:', error);
+      console.error('Araçlar getirilirken hata oluştu:', error);
     }
   };
 
   const fetchDrivers = async () => {
     try {
       const response = await fetch('https://111-production-573e.up.railway.app/api/drivers');
-      if (response.ok) {
-        const data = await response.json();
-        setDrivers(data);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      const data = await response.json();
+      setDrivers(data);
     } catch (error) {
-      console.error('Error fetching drivers:', error);
+      console.error('Sürücüler getirilirken hata oluştu:', error);
     }
   };
 
   const fetchAvailableDrivers = async () => {
     try {
       const response = await fetch('https://111-production-573e.up.railway.app/api/vehicles/available-drivers');
-      if (response.ok) {
-        const data = await response.json();
-        setAvailableDrivers(data);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      const data = await response.json();
+      setAvailableDrivers(data);
     } catch (error) {
-      console.error('Error fetching available drivers:', error);
+      console.error('Mevcut sürücüler getirilirken hata oluştu:', error);
     }
   };
 
@@ -97,7 +100,7 @@ export function Vehicles() {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Bilinmeyen hata'}`);
       }
       await fetchVehicles();
       await fetchAvailableDrivers();
@@ -109,10 +112,10 @@ export function Vehicles() {
         assignedDriverId: 'unassigned'
       });
       setShowAddForm(false);
-      alert('Vehicle added successfully!');
+      alert('Araç başarıyla eklendi!');
     } catch (error) {
-      console.error('Error adding vehicle:', error);
-      alert(`Failed to add vehicle: ${error.message}`);
+      console.error('Araç eklenirken hata oluştu:', error);
+      alert(`Araç eklenemedi: ${error.message}`);
     }
   };
 
@@ -132,16 +135,16 @@ export function Vehicles() {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Bilinmeyen hata'}`);
       }
       await fetchVehicles();
       await fetchAvailableDrivers();
       setShowEditForm(false);
       setSelectedVehicle(null);
-      alert('Vehicle updated successfully!');
+      alert('Araç başarıyla güncellendi!');
     } catch (error) {
-      console.error('Error updating vehicle:', error);
-      alert(`Failed to update vehicle: ${error.message}`);
+      console.error('Araç güncellenirken hata oluştu:', error);
+      alert(`Araç güncellenemedi: ${error.message}`);
     }
   };
 
@@ -159,7 +162,7 @@ export function Vehicles() {
         setVehicleSchedule(data.schedule || []);
       }
     } catch (error) {
-      console.error('Error fetching vehicle schedule:', error);
+      console.error('Araç takvimi getirilirken hata oluştu:', error);
     }
   };
 
@@ -180,7 +183,7 @@ export function Vehicles() {
     const daysInMonth = endDate.getDate();
     
     const days = [];
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
     
     dayNames.forEach(day => {
       days.push(
@@ -210,10 +213,9 @@ export function Vehicles() {
             <div
               key={booking.id}
               className="text-xs p-1 mb-1 rounded bg-blue-100 text-blue-800 truncate"
-              title={`${booking.title} - ${booking.clientName} ${booking.startTime ? `(${booking.startTime})` : ''}`}
+              title={`${booking.title} - ${booking.clientName}`}
             >
-              {booking.startTime && <Clock className="inline w-3 h-3 mr-1" />}
-              {booking.title}
+              {booking.clientName} - {booking.title}
             </div>
           ))}
         </div>
@@ -228,31 +230,47 @@ export function Vehicles() {
   };
 
   const handleDeleteVehicle = async (vehicleId) => {
-    if (window.confirm('Are you sure you want to delete this vehicle?')) {
+    if (window.confirm('Bu aracı silmek istediğinizden emin misiniz?')) {
       try {
         const response = await fetch(`https://111-production-573e.up.railway.app/api/vehicles/${vehicleId}`, {
           method: 'DELETE',
         });
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Bilinmeyen hata'}`);
         }
         await fetchVehicles();
         await fetchAvailableDrivers();
-        alert('Vehicle deleted successfully!');
+        alert('Araç başarıyla silindi!');
       } catch (error) {
-        console.error('Error deleting vehicle:', error);
-        alert(`Failed to delete vehicle: ${error.message}`);
+        console.error('Araç silinirken hata oluştu:', error);
+        alert(`Araç silinemedi: ${error.message}`);
       }
     }
   };
 
-  const handleEditVehicle = (vehicle) => {
-    setSelectedVehicle({
-      ...vehicle,
-      assignedDriverId: vehicle.assignedDriverId || 'unassigned'
-    });
-    setShowEditForm(true);
+  const handleAssignDriver = async (vehicleId, driverId) => {
+    try {
+      const actualDriverId = driverId === 'unassigned' ? null : driverId;
+      
+      const response = await fetch(`https://111-production-573e.up.railway.app/api/vehicles/${vehicleId}/assign-driver`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ driverId: actualDriverId }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Bilinmeyen hata'}`);
+      }
+      await fetchVehicles();
+      await fetchAvailableDrivers();
+      alert('Sürücü ataması başarıyla güncellendi!');
+    } catch (error) {
+      console.error('Sürücü atanırken hata oluştu:', error);
+      alert(`Sürücü atanamadı: ${error.message}`);
+    }
   };
 
   const handleViewVehicle = (vehicle) => {
@@ -260,26 +278,13 @@ export function Vehicles() {
     setShowViewModal(true);
   };
 
-  const handleAssignDriver = async (vehicleId, driverId) => {
-    try {
-      const response = await fetch(`https://111-production-573e.up.railway.app/api/vehicles/${vehicleId}/assign-driver`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ driverId: driverId === 'unassigned' ? null : driverId }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
-      }
-      await fetchVehicles();
-      await fetchAvailableDrivers();
-      alert('Driver assignment updated successfully!');
-    } catch (error) {
-      console.error('Error assigning driver:', error);
-      alert(`Failed to assign driver: ${error.message}`);
-    }
+  const handleEditVehicle = (vehicle) => {
+    const vehicleForEdit = {
+      ...vehicle,
+      assignedDriverId: vehicle.assignedDriverId || 'unassigned'
+    };
+    setSelectedVehicle(vehicleForEdit);
+    setShowEditForm(true);
   };
 
   const getAvailabilityColor = (availability) => {
@@ -303,27 +308,25 @@ export function Vehicles() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Vehicles</h1>
-          <p className="text-gray-600">Manage your fleet of vehicles</p>
+          <h1 className="text-3xl font-bold text-gray-900">Araçlar</h1>
+          <p className="text-gray-600">Araç filonuzu yönetin</p>
         </div>
         <Button onClick={() => setShowAddForm(true)} className="flex items-center">
           <Plus className="mr-2 h-4 w-4" />
-          Add Vehicle
+          Araç Ekle
         </Button>
       </div>
 
-      {/* Search */}
       <div className="relative mb-6">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
         <Input
-          placeholder="Search vehicles..."
+          placeholder="Araç ara..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10"
         />
       </div>
 
-      {/* Vehicles Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredVehicles.map((vehicle) => (
           <Card key={vehicle.id} className="hover:shadow-lg transition-shadow cursor-pointer">
@@ -334,26 +337,26 @@ export function Vehicles() {
                   <CardTitle className="text-lg">{vehicle.model}</CardTitle>
                 </div>
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getAvailabilityColor(vehicle.availability)}`}>
-                  {vehicle.availability}
+                  {vehicle.availability === 'Available' ? 'Müsait' : 'Rezerve Edildi'}
                 </span>
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Plate Number:</span>
+                  <span className="text-gray-600">Plaka Numarası:</span>
                   <span className="font-medium">{vehicle.plateNumber}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Type:</span>
+                  <span className="text-gray-600">Tip:</span>
                   <span className="font-medium">{vehicle.type}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Capacity:</span>
-                  <span className="font-medium">{vehicle.capacity} passengers</span>
+                  <span className="text-gray-600">Kapasite:</span>
+                  <span className="font-medium">{vehicle.capacity} yolcu</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Driver:</span>
+                  <span className="text-gray-600">Sürücü:</span>
                   <span className="font-medium">
                     {vehicle.assignedDriver ? (
                       <span className="flex items-center text-green-600">
@@ -363,22 +366,22 @@ export function Vehicles() {
                     ) : (
                       <span className="flex items-center text-gray-400">
                         <UserX className="mr-1 h-3 w-3" />
-                        Not assigned
+                        Atanmadı
                       </span>
                     )}
                   </span>
                 </div>
                 <div className="flex justify-between items-center pt-2 border-t">
-                  <span className="text-gray-600">Bookings:</span>
+                  <span className="text-gray-600">Rezervasyonlar:</span>
                   <div className="flex gap-2">
                     <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                      Total: {vehicle.totalBookings || 0}
+                      Toplam: {vehicle.totalBookings || 0}
                     </span>
                     <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                      Active: {vehicle.activeBookings || 0}
+                      Aktif: {vehicle.activeBookings || 0}
                     </span>
                     <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
-                      Completed: {vehicle.completedBookings || 0}
+                      Tamamlandı: {vehicle.completedBookings || 0}
                     </span>
                   </div>
                 </div>
@@ -390,10 +393,10 @@ export function Vehicles() {
                   size="sm"
                   onClick={() => handleViewSchedule(vehicle)}
                   className="flex items-center"
-                  title="View Schedule"
+                  title="Takvimi Görüntüle"
                 >
                   <Calendar className="mr-1 h-3 w-3" />
-                  Schedule
+                  Takvim
                 </Button>
                 <Button
                   variant="outline"
@@ -402,7 +405,7 @@ export function Vehicles() {
                   className="flex items-center"
                 >
                   <Edit className="mr-1 h-3 w-3" />
-                  Edit
+                  Düzenle
                 </Button>
                 <Button
                   variant="outline"
@@ -411,7 +414,7 @@ export function Vehicles() {
                   className="flex items-center text-red-600 hover:text-red-700"
                 >
                   <Trash2 className="mr-1 h-3 w-3" />
-                  Delete
+                  Sil
                 </Button>
               </div>
             </CardContent>
@@ -424,7 +427,7 @@ export function Vehicles() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Add New Vehicle</h2>
+              <h2 className="text-xl font-bold">Yeni Araç Ekle</h2>
               <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)}>
                 ×
               </Button>
@@ -436,45 +439,45 @@ export function Vehicles() {
                   id="model"
                   value={newVehicle.model}
                   onChange={(e) => setNewVehicle({...newVehicle, model: e.target.value})}
-                  placeholder="Enter vehicle model"
+                  placeholder="Araç modelini girin"
                 />
               </div>
               <div>
-                <Label htmlFor="plateNumber">Plate Number</Label>
+                <Label htmlFor="plateNumber">Plaka Numarası</Label>
                 <Input
                   id="plateNumber"
                   value={newVehicle.plateNumber}
                   onChange={(e) => setNewVehicle({...newVehicle, plateNumber: e.target.value})}
-                  placeholder="Enter plate number"
+                  placeholder="Plaka numarasını girin"
                 />
               </div>
               <div>
-                <Label htmlFor="type">Type</Label>
+                <Label htmlFor="type">Tip</Label>
                 <Input
                   id="type"
                   value={newVehicle.type}
                   onChange={(e) => setNewVehicle({...newVehicle, type: e.target.value})}
-                  placeholder="Enter vehicle type"
+                  placeholder="Araç tipini girin"
                 />
               </div>
               <div>
-                <Label htmlFor="capacity">Capacity</Label>
+                <Label htmlFor="capacity">Kapasite</Label>
                 <Input
                   id="capacity"
                   type="number"
                   value={newVehicle.capacity}
                   onChange={(e) => setNewVehicle({...newVehicle, capacity: e.target.value})}
-                  placeholder="Enter passenger capacity"
+                  placeholder="Yolcu kapasitesini girin"
                 />
               </div>
               <div>
-                <Label htmlFor="assignedDriver">Assigned Driver</Label>
+                <Label htmlFor="assignedDriver">Atanmış Sürücü</Label>
                 <Select onValueChange={(value) => setNewVehicle({...newVehicle, assignedDriverId: value})}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a driver" />
+                    <SelectValue placeholder="Sürücü seçin" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unassigned">No driver assigned</SelectItem>
+                    <SelectItem value="unassigned">Sürücü atanmadı</SelectItem>
                     {availableDrivers.map((driver) => (
                       <SelectItem key={driver.id} value={driver.id.toString()}>
                         {driver.fullName}
@@ -486,10 +489,10 @@ export function Vehicles() {
             </div>
             <div className="flex justify-end gap-2 mt-6">
               <Button variant="outline" onClick={() => setShowAddForm(false)}>
-                Cancel
+                İptal
               </Button>
               <Button onClick={handleAddVehicle}>
-                Add Vehicle
+                Araç Ekle
               </Button>
             </div>
           </div>
@@ -501,7 +504,7 @@ export function Vehicles() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Edit Vehicle</h2>
+              <h2 className="text-xl font-bold">Aracı Düzenle</h2>
               <Button variant="ghost" size="sm" onClick={() => setShowEditForm(false)}>
                 ×
               </Button>
@@ -513,45 +516,45 @@ export function Vehicles() {
                   id="editModel"
                   value={selectedVehicle.model}
                   onChange={(e) => setSelectedVehicle({...selectedVehicle, model: e.target.value})}
-                  placeholder="Enter vehicle model"
+                  placeholder="Araç modelini girin"
                 />
               </div>
               <div>
-                <Label htmlFor="editPlateNumber">Plate Number</Label>
+                <Label htmlFor="editPlateNumber">Plaka Numarası</Label>
                 <Input
                   id="editPlateNumber"
                   value={selectedVehicle.plateNumber}
                   onChange={(e) => setSelectedVehicle({...selectedVehicle, plateNumber: e.target.value})}
-                  placeholder="Enter plate number"
+                  placeholder="Plaka numarasını girin"
                 />
               </div>
               <div>
-                <Label htmlFor="editType">Type</Label>
+                <Label htmlFor="editType">Tip</Label>
                 <Input
                   id="editType"
                   value={selectedVehicle.type}
                   onChange={(e) => setSelectedVehicle({...selectedVehicle, type: e.target.value})}
-                  placeholder="Enter vehicle type"
+                  placeholder="Araç tipini girin"
                 />
               </div>
               <div>
-                <Label htmlFor="editCapacity">Capacity</Label>
+                <Label htmlFor="editCapacity">Kapasite</Label>
                 <Input
                   id="editCapacity"
                   type="number"
                   value={selectedVehicle.capacity}
                   onChange={(e) => setSelectedVehicle({...selectedVehicle, capacity: e.target.value})}
-                  placeholder="Enter passenger capacity"
+                  placeholder="Yolcu kapasitesini girin"
                 />
               </div>
               <div>
-                <Label htmlFor="editAssignedDriver">Assigned Driver</Label>
+                <Label htmlFor="editAssignedDriver">Atanmış Sürücü</Label>
                 <Select onValueChange={(value) => setSelectedVehicle({...selectedVehicle, assignedDriverId: value})}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a driver" />
+                    <SelectValue placeholder="Sürücü seçin" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unassigned">No driver assigned</SelectItem>
+                    <SelectItem value="unassigned">Sürücü atanmadı</SelectItem>
                     {availableDrivers.map((driver) => (
                       <SelectItem key={driver.id} value={driver.id.toString()}>
                         {driver.fullName}
@@ -563,10 +566,10 @@ export function Vehicles() {
             </div>
             <div className="flex justify-end gap-2 mt-6">
               <Button variant="outline" onClick={() => setShowEditForm(false)}>
-                Cancel
+                İptal
               </Button>
               <Button onClick={handleUpdateVehicle}>
-                Update Vehicle
+                Aracı Güncelle
               </Button>
             </div>
           </div>
@@ -580,36 +583,33 @@ export function Vehicles() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold flex items-center">
                 <Car className="mr-2 h-5 w-5" />
-                {selectedVehicleForSchedule.model} - {selectedVehicleForSchedule.plateNumber} Schedule
+                {selectedVehicleForSchedule.model} - {selectedVehicleForSchedule.plateNumber} - Takvim
               </h2>
               <Button variant="ghost" size="sm" onClick={() => setShowScheduleModal(false)}>
                 ×
               </Button>
             </div>
             
-            {/* Month Navigation */}
             <div className="flex justify-between items-center mb-4">
               <Button variant="outline" onClick={() => navigateMonth(-1)}>
                 <ChevronLeft className="h-4 w-4" />
-                Previous
+                Önceki
               </Button>
               <h3 className="text-lg font-semibold">
-                {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                {currentMonth.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
               </h3>
               <Button variant="outline" onClick={() => navigateMonth(1)}>
-                Next
+                Sonraki
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
             
-            {/* Calendar */}
             {renderCalendar()}
             
-            {/* Schedule List */}
             <div className="mt-6">
-              <h4 className="text-lg font-semibold mb-3">Bookings for this month:</h4>
+              <h4 className="text-lg font-semibold mb-3">Bu ayki rezervasyonlar:</h4>
               {vehicleSchedule.length === 0 ? (
-                <p className="text-gray-500">No bookings found for this month.</p>
+                <p className="text-gray-500">Bu ay için rezervasyon bulunamadı.</p>
               ) : (
                 <div className="space-y-2">
                   {vehicleSchedule.map(booking => (
@@ -617,16 +617,16 @@ export function Vehicles() {
                       <div className="flex justify-between items-start">
                         <div>
                           <h5 className="font-semibold">{booking.title}</h5>
-                          <p className="text-sm text-gray-600">Client: {booking.clientName}</p>
+                          <p className="text-sm text-gray-600">Müşteri: {booking.clientName}</p>
                           <p className="text-sm text-gray-600">
-                            {booking.start} to {booking.end}
-                            {booking.startTime && ` (${booking.startTime} - ${booking.endTime || 'End time not set'})`}
+                            {booking.start} - {booking.end}
+                            {booking.startTime && ` (${booking.startTime} - ${booking.endTime || 'Bitiş saati ayarlanmadı'})`}
                           </p>
                           {booking.driverInfo && (
-                            <p className="text-sm text-gray-600">Driver: {booking.driverInfo}</p>
+                            <p className="text-sm text-gray-600">Sürücü: {booking.driverInfo}</p>
                           )}
                           {booking.notes && (
-                            <p className="text-sm text-gray-600">Notes: {booking.notes}</p>
+                            <p className="text-sm text-gray-600">Notlar: {booking.notes}</p>
                           )}
                         </div>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -634,7 +634,7 @@ export function Vehicles() {
                           booking.bookingStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                           'bg-gray-100 text-gray-800'
                         }`}>
-                          {booking.bookingStatus}
+                          {booking.bookingStatus === 'confirmed' ? 'Onaylandı' : booking.bookingStatus === 'pending' ? 'Beklemede' : 'Tamamlandı'}
                         </span>
                       </div>
                     </div>
@@ -645,7 +645,7 @@ export function Vehicles() {
             
             <div className="flex justify-end mt-6">
               <Button onClick={() => setShowScheduleModal(false)}>
-                Close
+                Kapat
               </Button>
             </div>
           </div>
