@@ -20,6 +20,41 @@ import {
 } from 'lucide-react';
 
 export function Dashboard() {
+  // دوال مساعدة للتعامل مع الأرقام وتجنب أخطاء toFixed
+  const formatNumber = (value, decimals = 2) => {
+    if (value === null || value === undefined || value === '' || isNaN(value)) {
+      return decimals > 0 ? '0.00' : '0';
+    }
+    
+    const numValue = Number(value);
+    if (isNaN(numValue)) {
+      return decimals > 0 ? '0.00' : '0';
+    }
+    
+    return numValue.toFixed(decimals);
+  };
+
+  const formatInteger = (value) => {
+    if (value === null || value === undefined || value === '' || isNaN(value)) {
+      return 0;
+    }
+    
+    const numValue = Number(value);
+    return isNaN(numValue) ? 0 : Math.floor(numValue);
+  };
+
+  const getSafeNumber = (value, defaultValue = 0) => {
+    if (value !== null && value !== undefined && value !== '' && !isNaN(Number(value))) {
+      return Number(value);
+    }
+    return defaultValue;
+  };
+
+  const formatCurrency = (value) => {
+    const safeValue = getSafeNumber(value, 0);
+    return safeValue.toLocaleString();
+  };
+
   const [stats, setStats] = useState({
     upcomingBookings: 0,
     totalRevenue: 0,
@@ -169,7 +204,7 @@ export function Dashboard() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.upcomingBookings}</div>
+            <div className="text-2xl font-bold">{formatInteger(stats.upcomingBookings)}</div>
             <p className="text-xs text-muted-foreground">Sonraki 7 gün</p>
           </CardContent>
         </Card>
@@ -180,7 +215,7 @@ export function Dashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${stats.totalRevenue ? stats.totalRevenue.toLocaleString() : '0'}</div>
+            <div className="text-2xl font-bold">${formatCurrency(stats.totalRevenue)}</div>
             <p className="text-xs text-muted-foreground">Bu ay</p>
           </CardContent>
         </Card>
@@ -191,7 +226,7 @@ export function Dashboard() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${stats.totalProfit ? stats.totalProfit.toLocaleString() : '0'}</div>
+            <div className="text-2xl font-bold">${formatCurrency(stats.totalProfit)}</div>
             <p className="text-xs text-muted-foreground">Bu ay</p>
           </CardContent>
         </Card>
@@ -202,7 +237,7 @@ export function Dashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.activeClients}</div>
+            <div className="text-2xl font-bold">{formatInteger(stats.activeClients)}</div>
             <p className="text-xs text-muted-foreground">Toplam kayıtlı</p>
           </CardContent>
         </Card>
@@ -215,7 +250,7 @@ export function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Toplam Müşteriler</p>
-                <p className="text-2xl font-bold">{detailedStats.totalCounts.clients}</p>
+                <p className="text-2xl font-bold">{formatInteger(detailedStats.totalCounts.clients)}</p>
               </div>
               <Users className="h-8 w-8 text-blue-600" />
             </div>
@@ -227,7 +262,7 @@ export function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Toplam Şoförler</p>
-                <p className="text-2xl font-bold">{detailedStats.totalCounts.drivers}</p>
+                <p className="text-2xl font-bold">{formatInteger(detailedStats.totalCounts.drivers)}</p>
               </div>
               <Users className="h-8 w-8 text-green-600" />
             </div>
@@ -239,7 +274,7 @@ export function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Toplam Araçlar</p>
-                <p className="text-2xl font-bold">{detailedStats.totalCounts.vehicles}</p>
+                <p className="text-2xl font-bold">{formatInteger(detailedStats.totalCounts.vehicles)}</p>
               </div>
               <Car className="h-8 w-8 text-purple-600" />
             </div>
@@ -251,7 +286,7 @@ export function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Toplam Rezervasyonlar</p>
-                <p className="text-2xl font-bold">{detailedStats.totalCounts.bookings}</p>
+                <p className="text-2xl font-bold">{formatInteger(detailedStats.totalCounts.bookings)}</p>
               </div>
               <Calendar className="h-8 w-8 text-orange-600" />
             </div>
@@ -277,23 +312,23 @@ export function Dashboard() {
                     <div className="flex items-center gap-3 mb-2 sm:mb-0">
                       {getServiceIcon(booking.serviceType)}
                       <div>
-                        <p className="font-medium text-sm md:text-base">{booking.client}</p>
-                        <p className="text-xs text-gray-600">{booking.service}</p>
+                        <p className="font-medium text-sm md:text-base">{booking.client || 'Müşteri bilgisi yok'}</p>
+                        <p className="text-xs text-gray-600">{booking.service || 'Hizmet bilgisi yok'}</p>
                         {booking.isAccommodation && booking.hotelName && (
-                          <p className="text-xs text-blue-600">{booking.hotelName} • {booking.numNights} gece</p>
+                          <p className="text-xs text-blue-600">{booking.hotelName} • {formatInteger(booking.numNights)} gece</p>
                         )}
                         <div className="flex items-center gap-2 mt-1">
                           {getStatusIcon(booking.status)}
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
-                            {booking.status}
+                            {booking.status || 'Durum bilinmiyor'}
                           </span>
                         </div>
                       </div>
                     </div>
                     <div className="text-right sm:text-left">
-                      <p className="font-bold text-green-600 text-sm md:text-base">${booking.amount.toFixed(2)}</p>
+                      <p className="font-bold text-green-600 text-sm md:text-base">${formatNumber(booking.amount)}</p>
                       <p className="text-xs text-gray-500">{getDaysUntil(booking.startDate)}</p>
-                      <p className="text-xs text-gray-400">{booking.startDate}</p>
+                      <p className="text-xs text-gray-400">{booking.startDate || 'Tarih bilinmiyor'}</p>
                     </div>
                   </div>
                 ))
@@ -323,19 +358,19 @@ export function Dashboard() {
                     <div className="flex items-center gap-3 mb-2 sm:mb-0">
                       {getServiceIcon(booking.serviceType)}
                       <div>
-                        <p className="font-medium text-sm md:text-base">{booking.client}</p>
-                        <p className="text-xs text-gray-600">{booking.service}</p>
+                        <p className="font-medium text-sm md:text-base">{booking.client || 'Müşteri bilgisi yok'}</p>
+                        <p className="text-xs text-gray-600">{booking.service || 'Hizmet bilgisi yok'}</p>
                         <div className="flex items-center gap-2 mt-1">
                           {getStatusIcon(booking.status)}
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
-                            {booking.status}
+                            {booking.status || 'Durum bilinmiyor'}
                           </span>
                         </div>
                       </div>
                     </div>
                     <div className="text-right sm:text-left">
-                      <p className="font-bold text-green-600 text-sm md:text-base">${booking.amount.toFixed(2)}</p>
-                      <p className="text-xs text-gray-500">{booking.date}</p>
+                      <p className="font-bold text-green-600 text-sm md:text-base">${formatNumber(booking.amount)}</p>
+                      <p className="text-xs text-gray-500">{booking.date || 'Tarih bilinmiyor'}</p>
                     </div>
                   </div>
                 ))
@@ -349,7 +384,7 @@ export function Dashboard() {
           </CardContent>
         </Card>
       </div>
+    </div>
+  );
+}
 
-
-  </div> 
-)}
