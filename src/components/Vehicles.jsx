@@ -273,6 +273,20 @@ export function Vehicles() {
                     )}
                   </span>
                 </div>
+                <div className="flex justify-between items-center pt-2 border-t">
+                  <span className="text-gray-600">Bookings:</span>
+                  <div className="flex gap-2">
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                      Total: {vehicle.totalBookings || 0}
+                    </span>
+                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                      Active: {vehicle.activeBookings || 0}
+                    </span>
+                    <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
+                      Completed: {vehicle.completedBookings || 0}
+                    </span>
+                  </div>
+                </div>
               </div>
               
               <div className="flex justify-between mt-4 pt-4 border-t">

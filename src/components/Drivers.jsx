@@ -424,11 +424,26 @@ export function Drivers() {
                         </span>
                         <span className="flex items-center">
                           <Phone className="mr-1 h-3 w-3" />
-                          {driver.phone}
+                          {driver.phone || 'N/A'}
                         </span>
                         <span className="flex items-center">
                           <IdCard className="mr-1 h-3 w-3" />
                           {driver.licenseNumber}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
+                        <span className="flex items-center">
+                          <Car className="mr-1 h-3 w-3" />
+                          {driver.assignedVehicles?.length || 0} vehicles assigned
+                        </span>
+                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                          Total: {driver.totalBookings || 0} bookings
+                        </span>
+                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                          Active: {driver.activeBookings || 0}
+                        </span>
+                        <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
+                          Completed: {driver.completedBookings || 0}
                         </span>
                       </div>
                       {driver.assignedVehicles && driver.assignedVehicles.length > 0 && (
