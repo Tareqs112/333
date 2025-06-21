@@ -336,7 +336,7 @@ export function Vehicles() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Kapasite:</span>
-                  <span className="font-medium">{vehicle.capacity} yolcu</span>
+                  <span className="font-medium">{vehicle.capacity || 0} yolcu</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Sürücü:</span>
