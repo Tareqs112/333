@@ -13,7 +13,8 @@ import {
   Users,
   Eye,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  Trash2
 } from 'lucide-react';
 
 export function Invoices() {
@@ -21,6 +22,7 @@ export function Invoices() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     fetchInvoices();
@@ -41,6 +43,36 @@ export function Invoices() {
       setError('Failed to fetch invoices. Please check if the server is running.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteInvoice = async (invoiceId) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذه الفاتورة؟ لا يمكن التراجع عن هذا الإجراء.')) {
+      return;
+    }
+
+    try {
+      setDeletingId(invoiceId);
+      const response = await fetch(`https://111-production-573e.up.railway.app/api/invoices/${invoiceId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      // Remove the deleted invoice from the local state
+      setInvoices(prevInvoices => prevInvoices.filter(invoice => invoice.id !== invoiceId));
+      
+      // Show success message
+      alert('تم حذف الفاتورة بنجاح');
+      
+    } catch (error) {
+      console.error('Error deleting invoice:', error);
+      alert('حدث خطأ أثناء حذف الفاتورة: ' + error.message);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -261,6 +293,20 @@ export function Invoices() {
                     >
                       <Mail className="h-4 w-4" />
                     </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteInvoice(invoice.id)}
+                      disabled={deletingId === invoice.id}
+                      title="Delete Invoice"
+                      className="p-2 hover:bg-red-50 hover:border-red-300 hover:text-red-600"
+                    >
+                      {deletingId === invoice.id ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -272,6 +318,14 @@ export function Invoices() {
       {/* Enhanced Features Notice */}
       <Card className="mt-6">
         <CardContent className="p-4">
+          <div className="text-center text-sm text-gray-600">
+            <p className="mb-2">
+              <strong>إدارة الفواتير:</strong> يمكنك الآن حذف الفواتير غير المرغوب فيها
+            </p>
+            <p>
+              تأكد من تحميل نسخة من الفاتورة قبل حذفها إذا كنت تحتاجها لاحقاً
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
