@@ -18,7 +18,8 @@ import {
   Clock,
   User,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  X // Added for close button in modals
 } from 'lucide-react';
 
 export function Drivers() {
@@ -542,7 +543,7 @@ export function Drivers() {
                           <h5 className="font-semibold">{booking.title}</h5>
                           <p className="text-sm text-gray-600">Müşteri: {booking.clientName}</p>
                           <p className="text-sm text-gray-600">
-                            {booking.start} - {booking.end}
+                            {new Date(booking.start).toLocaleDateString('tr-TR')} - {new Date(booking.end).toLocaleDateString('tr-TR')}
                             {booking.startTime && ` (${booking.startTime} - ${booking.endTime || 'Bitiş saati ayarlanmadı'})`}
                           </p>
                           {booking.vehicleInfo && (

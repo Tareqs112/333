@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import {
   Plus,
   Search,
@@ -15,7 +14,8 @@ import {
   Calendar,
   Clock,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  X // Added for close button in modals
 } from 'lucide-react';
 
 export function Vehicles() {
@@ -37,7 +37,6 @@ export function Vehicles() {
     capacity: '',
     assignedDriverId: 'unassigned'
   });
-  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchVehicles();
@@ -54,7 +53,7 @@ export function Vehicles() {
       const data = await response.json();
       setVehicles(data);
     } catch (error) {
-      console.error('Araçlar getirilirken hata oluştu:', error);
+      console.error('Error fetching vehicles:', error);
     }
   };
 
@@ -67,7 +66,7 @@ export function Vehicles() {
       const data = await response.json();
       setDrivers(data);
     } catch (error) {
-      console.error('Sürücüler getirilirken hata oluştu:', error);
+      console.error('Error fetching drivers:', error);
     }
   };
 
@@ -80,7 +79,7 @@ export function Vehicles() {
       const data = await response.json();
       setAvailableDrivers(data);
     } catch (error) {
-      console.error('Mevcut sürücüler getirilirken hata oluştu:', error);
+      console.error('Error fetching available drivers:', error);
     }
   };
 
@@ -100,7 +99,7 @@ export function Vehicles() {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Bilinmeyen hata'}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
       }
       await fetchVehicles();
       await fetchAvailableDrivers();
@@ -114,8 +113,8 @@ export function Vehicles() {
       setShowAddForm(false);
       alert('Araç başarıyla eklendi!');
     } catch (error) {
-      console.error('Araç eklenirken hata oluştu:', error);
-      alert(`Araç eklenemedi: ${error.message}`);
+      console.error('Error adding vehicle:', error);
+      alert(`Araç eklenirken hata oluştu: ${error.message}`);
     }
   };
 
@@ -135,7 +134,7 @@ export function Vehicles() {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Bilinmeyen hata'}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
       }
       await fetchVehicles();
       await fetchAvailableDrivers();
@@ -143,8 +142,8 @@ export function Vehicles() {
       setSelectedVehicle(null);
       alert('Araç başarıyla güncellendi!');
     } catch (error) {
-      console.error('Araç güncellenirken hata oluştu:', error);
-      alert(`Araç güncellenemedi: ${error.message}`);
+      console.error('Error updating vehicle:', error);
+      alert(`Araç güncellenirken hata oluştu: ${error.message}`);
     }
   };
 
@@ -162,7 +161,7 @@ export function Vehicles() {
         setVehicleSchedule(data.schedule || []);
       }
     } catch (error) {
-      console.error('Araç takvimi getirilirken hata oluştu:', error);
+      console.error('Error fetching vehicle schedule:', error);
     }
   };
 
@@ -237,14 +236,14 @@ export function Vehicles() {
         });
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Bilinmeyen hata'}`);
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
         }
         await fetchVehicles();
         await fetchAvailableDrivers();
         alert('Araç başarıyla silindi!');
       } catch (error) {
-        console.error('Araç silinirken hata oluştu:', error);
-        alert(`Araç silinemedi: ${error.message}`);
+        console.error('Error deleting vehicle:', error);
+        alert(`Araç silinirken hata oluştu: ${error.message}`);
       }
     }
   };
@@ -262,14 +261,14 @@ export function Vehicles() {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Bilinmeyen hata'}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
       }
       await fetchVehicles();
       await fetchAvailableDrivers();
       alert('Sürücü ataması başarıyla güncellendi!');
     } catch (error) {
-      console.error('Sürücü atanırken hata oluştu:', error);
-      alert(`Sürücü atanamadı: ${error.message}`);
+      console.error('Error assigning driver:', error);
+      alert(`Sürücü ataması güncellenirken hata oluştu: ${error.message}`);
     }
   };
 
@@ -298,12 +297,6 @@ export function Vehicles() {
     }
   };
 
-  const filteredVehicles = vehicles.filter(vehicle =>
-    vehicle.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    vehicle.plateNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    vehicle.type.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -317,18 +310,8 @@ export function Vehicles() {
         </Button>
       </div>
 
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-        <Input
-          placeholder="Araç ara..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
-        />
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredVehicles.map((vehicle) => (
+        {vehicles.map((vehicle) => (
           <Card key={vehicle.id} className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start">
@@ -337,7 +320,7 @@ export function Vehicles() {
                   <CardTitle className="text-lg">{vehicle.model}</CardTitle>
                 </div>
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getAvailabilityColor(vehicle.availability)}`}>
-                  {vehicle.availability === 'Available' ? 'Müsait' : 'Rezerve Edildi'}
+                  {vehicle.availability}
                 </span>
               </div>
             </CardHeader>
@@ -422,14 +405,13 @@ export function Vehicles() {
         ))}
       </div>
 
-      {/* Add Vehicle Modal */}
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Yeni Araç Ekle</h2>
               <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)}>
-                ×
+                X
               </Button>
             </div>
             <div className="space-y-4">
@@ -439,7 +421,7 @@ export function Vehicles() {
                   id="model"
                   value={newVehicle.model}
                   onChange={(e) => setNewVehicle({...newVehicle, model: e.target.value})}
-                  placeholder="Araç modelini girin"
+                  placeholder="Modeli girin"
                 />
               </div>
               <div>
@@ -457,7 +439,7 @@ export function Vehicles() {
                   id="type"
                   value={newVehicle.type}
                   onChange={(e) => setNewVehicle({...newVehicle, type: e.target.value})}
-                  placeholder="Araç tipini girin"
+                  placeholder="Aracın tipini girin (örn. Sedan, SUV)"
                 />
               </div>
               <div>
@@ -471,42 +453,37 @@ export function Vehicles() {
                 />
               </div>
               <div>
-                <Label htmlFor="assignedDriver">Atanmış Sürücü</Label>
-                <Select onValueChange={(value) => setNewVehicle({...newVehicle, assignedDriverId: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sürücü seçin" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unassigned">Sürücü atanmadı</SelectItem>
-                    {availableDrivers.map((driver) => (
-                      <SelectItem key={driver.id} value={driver.id.toString()}>
-                        {driver.fullName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="assignedDriver">Atanan Sürücü</Label>
+                <select
+                  id="assignedDriver"
+                  value={newVehicle.assignedDriverId}
+                  onChange={(e) => setNewVehicle({...newVehicle, assignedDriverId: e.target.value})}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="unassigned">Atanmadı</option>
+                  {availableDrivers.map(driver => (
+                    <option key={driver.id} value={driver.id}>
+                      {driver.firstName} {driver.lastName}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-6">
-              <Button variant="outline" onClick={() => setShowAddForm(false)}>
-                İptal
-              </Button>
-              <Button onClick={handleAddVehicle}>
-                Araç Ekle
-              </Button>
+            <div className="flex gap-2 justify-end">
+              <Button onClick={handleAddVehicle}>Araç Ekle</Button>
+              <Button variant="outline" onClick={() => setShowAddForm(false)}>İptal</Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Edit Vehicle Modal */}
       {showEditForm && selectedVehicle && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Aracı Düzenle</h2>
               <Button variant="ghost" size="sm" onClick={() => setShowEditForm(false)}>
-                ×
+                X
               </Button>
             </div>
             <div className="space-y-4">
@@ -516,7 +493,7 @@ export function Vehicles() {
                   id="editModel"
                   value={selectedVehicle.model}
                   onChange={(e) => setSelectedVehicle({...selectedVehicle, model: e.target.value})}
-                  placeholder="Araç modelini girin"
+                  placeholder="Modeli girin"
                 />
               </div>
               <div>
@@ -534,7 +511,7 @@ export function Vehicles() {
                   id="editType"
                   value={selectedVehicle.type}
                   onChange={(e) => setSelectedVehicle({...selectedVehicle, type: e.target.value})}
-                  placeholder="Araç tipini girin"
+                  placeholder="Aracın tipini girin (örn. Sedan, SUV)"
                 />
               </div>
               <div>
@@ -548,45 +525,40 @@ export function Vehicles() {
                 />
               </div>
               <div>
-                <Label htmlFor="editAssignedDriver">Atanmış Sürücü</Label>
-                <Select onValueChange={(value) => setSelectedVehicle({...selectedVehicle, assignedDriverId: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sürücü seçin" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unassigned">Sürücü atanmadı</SelectItem>
-                    {availableDrivers.map((driver) => (
-                      <SelectItem key={driver.id} value={driver.id.toString()}>
-                        {driver.fullName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="editAssignedDriver">Atanan Sürücü</Label>
+                <select
+                  id="editAssignedDriver"
+                  value={selectedVehicle.assignedDriverId}
+                  onChange={(e) => setSelectedVehicle({...selectedVehicle, assignedDriverId: e.target.value})}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="unassigned">Atanmadı</option>
+                  {availableDrivers.map(driver => (
+                    <option key={driver.id} value={driver.id}>
+                      {driver.firstName} {driver.lastName}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-6">
-              <Button variant="outline" onClick={() => setShowEditForm(false)}>
-                İptal
-              </Button>
-              <Button onClick={handleUpdateVehicle}>
-                Aracı Güncelle
-              </Button>
+            <div className="flex gap-2 justify-end">
+              <Button onClick={handleUpdateVehicle}>Güncelle</Button>
+              <Button variant="outline" onClick={() => setShowEditForm(false)}>İptal</Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Vehicle Schedule Modal */}
       {showScheduleModal && selectedVehicleForSchedule && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold flex items-center">
                 <Car className="mr-2 h-5 w-5" />
-                {selectedVehicleForSchedule.model} - {selectedVehicleForSchedule.plateNumber} - Takvim
+                {selectedVehicleForSchedule.model} - Takvim
               </h2>
               <Button variant="ghost" size="sm" onClick={() => setShowScheduleModal(false)}>
-                ×
+                X
               </Button>
             </div>
             
@@ -619,7 +591,7 @@ export function Vehicles() {
                           <h5 className="font-semibold">{booking.title}</h5>
                           <p className="text-sm text-gray-600">Müşteri: {booking.clientName}</p>
                           <p className="text-sm text-gray-600">
-                            {booking.start} - {booking.end}
+                            {new Date(booking.start).toLocaleDateString('tr-TR')} - {new Date(booking.end).toLocaleDateString('tr-TR')}
                             {booking.startTime && ` (${booking.startTime} - ${booking.endTime || 'Bitiş saati ayarlanmadı'})`}
                           </p>
                           {booking.driverInfo && (
