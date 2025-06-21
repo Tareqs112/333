@@ -314,20 +314,6 @@ export function Invoices() {
           )}
         </CardContent>
       </Card>
-
-      {/* Enhanced Features Notice */}
-      <Card className="mt-6">
-        <CardContent className="p-4">
-          <div className="text-center text-sm text-gray-600">
-            <p className="mb-2">
-              <strong>إدارة الفواتير:</strong> يمكنك الآن حذف الفواتير غير المرغوب فيها
-            </p>
-            <p>
-              تأكد من تحميل نسخة من الفاتورة قبل حذفها إذا كنت تحتاجها لاحقاً
-            </p>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
