@@ -23,6 +23,36 @@ import {
 } from 'lucide-react';
 
 export function Drivers() {
+  // دوال مساعدة للتعامل مع الأرقام وتجنب أخطاء toFixed
+  const formatNumber = (value, decimals = 2) => {
+    if (value === null || value === undefined || value === '' || isNaN(value)) {
+      return decimals > 0 ? '0.00' : '0';
+    }
+    
+    const numValue = Number(value);
+    if (isNaN(numValue)) {
+      return decimals > 0 ? '0.00' : '0';
+    }
+    
+    return numValue.toFixed(decimals);
+  };
+
+  const formatInteger = (value) => {
+    if (value === null || value === undefined || value === '' || isNaN(value)) {
+      return 0;
+    }
+    
+    const numValue = Number(value);
+    return isNaN(numValue) ? 0 : Math.floor(numValue);
+  };
+
+  const getSafeNumber = (value, defaultValue = 0) => {
+    if (value !== null && value !== undefined && value !== '' && !isNaN(Number(value))) {
+      return Number(value);
+    }
+    return defaultValue;
+  };
+
   const [drivers, setDrivers] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -76,10 +106,10 @@ export function Drivers() {
   };
 
   const filteredDrivers = drivers.filter(driver =>
-    driver.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    driver.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    driver.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    driver.licenseNumber.toLowerCase().includes(searchTerm.toLowerCase())
+    (driver.firstName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (driver.lastName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (driver.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (driver.licenseNumber || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAddDriver = async () => {
@@ -109,11 +139,11 @@ export function Drivers() {
   const handleEditDriver = (driver) => {
     setEditingDriver({
       id: driver.id,
-      firstName: driver.firstName,
-      lastName: driver.lastName,
-      email: driver.email,
-      phone: driver.phone,
-      licenseNumber: driver.licenseNumber
+      firstName: driver.firstName || '',
+      lastName: driver.lastName || '',
+      email: driver.email || '',
+      phone: driver.phone || '',
+      licenseNumber: driver.licenseNumber || ''
     });
     setShowEditForm(true);
   };
@@ -443,6 +473,96 @@ export function Drivers() {
         </Card>
       )}
 
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredDrivers.map((driver) => (
+          <Card key={driver.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">
+                  {driver.firstName || 'N/A'} {driver.lastName || 'N/A'}
+                </CardTitle>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" onClick={() => handleEditDriver(driver)}>
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDeleteDriver(driver.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center text-sm text-gray-600">
+                <Mail className="mr-2 h-4 w-4" />
+                {driver.email || 'E-posta yok'}
+              </div>
+              {driver.phone && (
+                <div className="flex items-center text-sm text-gray-600">
+                  <Phone className="mr-2 h-4 w-4" />
+                  {driver.phone}
+                </div>
+              )}
+              <div className="flex items-center text-sm text-gray-600">
+                <IdCard className="mr-2 h-4 w-4" />
+                {driver.licenseNumber || 'Ehliyet numarası yok'}
+              </div>
+              
+              <div className="pt-3 border-t">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Toplam Rezervasyon:</span>
+                  <span className="font-semibold">{formatInteger(driver.totalBookings)}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Aktif Rezervasyon:</span>
+                  <span className="font-semibold text-blue-600">{formatInteger(driver.activeBookings)}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Tamamlanan:</span>
+                  <span className="font-semibold text-green-600">{formatInteger(driver.completedBookings)}</span>
+                </div>
+              </div>
+
+              {driver.assignedVehicles && driver.assignedVehicles.length > 0 && (
+                <div className="pt-3 border-t">
+                  <div className="flex items-center text-sm text-gray-600 mb-2">
+                    <Car className="mr-2 h-4 w-4" />
+                    Atanmış Araçlar:
+                  </div>
+                  <div className="space-y-1">
+                    {driver.assignedVehicles.map((vehicle) => (
+                      <div key={vehicle.id} className="text-xs bg-gray-100 rounded px-2 py-1">
+                        {vehicle.model} - {vehicle.plateNumber}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-3">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleAssignVehicles(driver)}
+                  className="flex-1"
+                >
+                  <Link className="mr-1 h-3 w-3" />
+                  Araç Ata
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleViewSchedule(driver)}
+                  className="flex-1"
+                >
+                  <Calendar className="mr-1 h-3 w-3" />
+                  Takvim
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
       {showAssignVehicleForm && assigningDriver && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
@@ -469,9 +589,9 @@ export function Drivers() {
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-semibold">{vehicle.model}</h4>
-                        <p className="text-sm text-gray-600">{vehicle.plateNumber}</p>
-                        <p className="text-xs text-gray-500">{vehicle.type} - {vehicle.capacity} yolcu</p>
+                        <h4 className="font-semibold">{vehicle.model || 'Model yok'}</h4>
+                        <p className="text-sm text-gray-600">{vehicle.plateNumber || 'Plaka yok'}</p>
+                        <p className="text-xs text-gray-500">{vehicle.type || 'Tip yok'} - {formatInteger(vehicle.capacity)} yolcu</p>
                       </div>
                       <div className={`w-4 h-4 rounded border-2 ${
                         selectedVehicleIds.includes(vehicle.id)
@@ -540,8 +660,8 @@ export function Drivers() {
                     <div key={booking.id} className="p-3 border rounded-lg bg-gray-50">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h5 className="font-semibold">{booking.title}</h5>
-                          <p className="text-sm text-gray-600">Müşteri: {booking.clientName}</p>
+                          <h5 className="font-semibold">{booking.title || 'Başlık yok'}</h5>
+                          <p className="text-sm text-gray-600">Müşteri: {booking.clientName || 'Müşteri bilgisi yok'}</p>
                           <p className="text-sm text-gray-600">
                             {new Date(booking.start).toLocaleDateString('tr-TR')} - {new Date(booking.end).toLocaleDateString('tr-TR')}
                             {booking.startTime && ` (${booking.startTime} - ${booking.endTime || 'Bitiş saati ayarlanmadı'})`}
