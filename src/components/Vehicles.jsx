@@ -5,16 +5,17 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import {
-  Car,
   Plus,
+  Search,
   Edit,
   Trash2,
-  User,
+  Car,
   UserCheck,
   UserX,
-  Eye,
-  Save,
-  X
+  Calendar,
+  Clock,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 export function Vehicles() {
@@ -24,14 +25,19 @@ export function Vehicles() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [selectedVehicleForSchedule, setSelectedVehicleForSchedule] = useState(null);
+  const [vehicleSchedule, setVehicleSchedule] = useState([]);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [newVehicle, setNewVehicle] = useState({
     model: '',
     plateNumber: '',
     type: '',
     capacity: '',
-    assignedDriverId: 'unassigned' // تغيير القيمة الافتراضية من '' إلى 'unassigned'
+    assignedDriverId: 'unassigned'
   });
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchVehicles();
@@ -42,11 +48,10 @@ export function Vehicles() {
   const fetchVehicles = async () => {
     try {
       const response = await fetch('https://111-production-573e.up.railway.app/api/vehicles');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (response.ok) {
+        const data = await response.json();
+        setVehicles(data);
       }
-      const data = await response.json();
-      setVehicles(data);
     } catch (error) {
       console.error('Error fetching vehicles:', error);
     }
@@ -55,11 +60,10 @@ export function Vehicles() {
   const fetchDrivers = async () => {
     try {
       const response = await fetch('https://111-production-573e.up.railway.app/api/drivers');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (response.ok) {
+        const data = await response.json();
+        setDrivers(data);
       }
-      const data = await response.json();
-      setDrivers(data);
     } catch (error) {
       console.error('Error fetching drivers:', error);
     }
@@ -68,11 +72,10 @@ export function Vehicles() {
   const fetchAvailableDrivers = async () => {
     try {
       const response = await fetch('https://111-production-573e.up.railway.app/api/vehicles/available-drivers');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableDrivers(data);
       }
-      const data = await response.json();
-      setAvailableDrivers(data);
     } catch (error) {
       console.error('Error fetching available drivers:', error);
     }
@@ -80,7 +83,6 @@ export function Vehicles() {
 
   const handleAddVehicle = async () => {
     try {
-      // تحويل 'unassigned' إلى قيمة فارغة قبل الإرسال إلى الخادم
       const vehicleData = {
         ...newVehicle,
         assignedDriverId: newVehicle.assignedDriverId === 'unassigned' ? '' : newVehicle.assignedDriverId
@@ -104,7 +106,7 @@ export function Vehicles() {
         plateNumber: '',
         type: '',
         capacity: '',
-        assignedDriverId: 'unassigned' // إعادة تعيين إلى 'unassigned'
+        assignedDriverId: 'unassigned'
       });
       setShowAddForm(false);
       alert('Vehicle added successfully!');
@@ -116,7 +118,6 @@ export function Vehicles() {
 
   const handleUpdateVehicle = async () => {
     try {
-      // تحويل 'unassigned' إلى قيمة فارغة قبل الإرسال إلى الخادم
       const vehicleData = {
         ...selectedVehicle,
         assignedDriverId: selectedVehicle.assignedDriverId === 'unassigned' ? '' : selectedVehicle.assignedDriverId
@@ -144,6 +145,88 @@ export function Vehicles() {
     }
   };
 
+  const handleViewSchedule = async (vehicle) => {
+    setSelectedVehicleForSchedule(vehicle);
+    setShowScheduleModal(true);
+    
+    const startDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+    const endDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+    
+    try {
+      const response = await fetch(`https://111-production-573e.up.railway.app/api/vehicles/${vehicle.id}/schedule?start_date=${startDate.toISOString().split('T')[0]}&end_date=${endDate.toISOString().split('T')[0]}`);
+      if (response.ok) {
+        const data = await response.json();
+        setVehicleSchedule(data.schedule || []);
+      }
+    } catch (error) {
+      console.error('Error fetching vehicle schedule:', error);
+    }
+  };
+
+  const navigateMonth = (direction) => {
+    const newMonth = new Date(currentMonth);
+    newMonth.setMonth(currentMonth.getMonth() + direction);
+    setCurrentMonth(newMonth);
+    
+    if (showScheduleModal && selectedVehicleForSchedule) {
+      handleViewSchedule(selectedVehicleForSchedule);
+    }
+  };
+
+  const renderCalendar = () => {
+    const startDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+    const endDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+    const startDay = startDate.getDay();
+    const daysInMonth = endDate.getDate();
+    
+    const days = [];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
+    dayNames.forEach(day => {
+      days.push(
+        <div key={day} className="p-2 text-center font-semibold text-gray-600 bg-gray-100">
+          {day}
+        </div>
+      );
+    });
+    
+    for (let i = 0; i < startDay; i++) {
+      days.push(<div key={`empty-${i}`} className="p-2 border border-gray-200"></div>);
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const currentDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+      
+      const dayBookings = vehicleSchedule.filter(booking => {
+        const bookingStart = new Date(booking.start);
+        const bookingEnd = new Date(booking.end);
+        return currentDate >= bookingStart && currentDate <= bookingEnd;
+      });
+      
+      days.push(
+        <div key={day} className="p-1 border border-gray-200 min-h-[80px] bg-white">
+          <div className="font-semibold text-sm mb-1">{day}</div>
+          {dayBookings.map(booking => (
+            <div
+              key={booking.id}
+              className="text-xs p-1 mb-1 rounded bg-blue-100 text-blue-800 truncate"
+              title={`${booking.title} - ${booking.clientName} ${booking.startTime ? `(${booking.startTime})` : ''}`}
+            >
+              {booking.startTime && <Clock className="inline w-3 h-3 mr-1" />}
+              {booking.title}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    
+    return (
+      <div className="grid grid-cols-7 gap-0 border border-gray-200">
+        {days}
+      </div>
+    );
+  };
+
   const handleDeleteVehicle = async (vehicleId) => {
     if (window.confirm('Are you sure you want to delete this vehicle?')) {
       try {
@@ -164,17 +247,27 @@ export function Vehicles() {
     }
   };
 
+  const handleEditVehicle = (vehicle) => {
+    setSelectedVehicle({
+      ...vehicle,
+      assignedDriverId: vehicle.assignedDriverId || 'unassigned'
+    });
+    setShowEditForm(true);
+  };
+
+  const handleViewVehicle = (vehicle) => {
+    setSelectedVehicle(vehicle);
+    setShowViewModal(true);
+  };
+
   const handleAssignDriver = async (vehicleId, driverId) => {
     try {
-      // تحويل 'unassigned' إلى null قبل الإرسال
-      const actualDriverId = driverId === 'unassigned' ? null : driverId;
-      
       const response = await fetch(`https://111-production-573e.up.railway.app/api/vehicles/${vehicleId}/assign-driver`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ driverId: actualDriverId }),
+        body: JSON.stringify({ driverId: driverId === 'unassigned' ? null : driverId }),
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -189,21 +282,6 @@ export function Vehicles() {
     }
   };
 
-  const handleViewVehicle = (vehicle) => {
-    setSelectedVehicle(vehicle);
-    setShowViewModal(true);
-  };
-
-  const handleEditVehicle = (vehicle) => {
-    // تحويل القيمة الفارغة أو null إلى 'unassigned' للعرض في النموذج
-    const vehicleForEdit = {
-      ...vehicle,
-      assignedDriverId: vehicle.assignedDriverId || 'unassigned'
-    };
-    setSelectedVehicle(vehicleForEdit);
-    setShowEditForm(true);
-  };
-
   const getAvailabilityColor = (availability) => {
     switch (availability) {
       case 'Available':
@@ -214,6 +292,12 @@ export function Vehicles() {
         return 'text-gray-600 bg-gray-100';
     }
   };
+
+  const filteredVehicles = vehicles.filter(vehicle =>
+    vehicle.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    vehicle.plateNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    vehicle.type.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="p-6">
@@ -228,9 +312,20 @@ export function Vehicles() {
         </Button>
       </div>
 
+      {/* Search */}
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Input
+          placeholder="Search vehicles..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
       {/* Vehicles Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {vehicles.map((vehicle) => (
+        {filteredVehicles.map((vehicle) => (
           <Card key={vehicle.id} className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start">
@@ -293,11 +388,12 @@ export function Vehicles() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleViewVehicle(vehicle)}
+                  onClick={() => handleViewSchedule(vehicle)}
                   className="flex items-center"
+                  title="View Schedule"
                 >
-                  <Eye className="mr-1 h-3 w-3" />
-                  View
+                  <Calendar className="mr-1 h-3 w-3" />
+                  Schedule
                 </Button>
                 <Button
                   variant="outline"
@@ -330,7 +426,7 @@ export function Vehicles() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Add New Vehicle</h2>
               <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)}>
-                <X className="h-4 w-4" />
+                ×
               </Button>
             </div>
             <div className="space-y-4">
@@ -354,19 +450,12 @@ export function Vehicles() {
               </div>
               <div>
                 <Label htmlFor="type">Type</Label>
-                <Select value={newVehicle.type} onValueChange={(value) => setNewVehicle({...newVehicle, type: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select vehicle type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Sedan">Sedan</SelectItem>
-                    <SelectItem value="SUV">Taliant</SelectItem>
-                    <SelectItem value="Van">Van Marcides</SelectItem>
-                    <SelectItem value="Bus">Bus</SelectItem>
-                    <SelectItem value="Minibus">Duster</SelectItem>
-                    <SelectItem value="Coaster">Coaster</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="type"
+                  value={newVehicle.type}
+                  onChange={(e) => setNewVehicle({...newVehicle, type: e.target.value})}
+                  placeholder="Enter vehicle type"
+                />
               </div>
               <div>
                 <Label htmlFor="capacity">Capacity</Label>
@@ -379,10 +468,10 @@ export function Vehicles() {
                 />
               </div>
               <div>
-                <Label htmlFor="assignedDriver">Assigned Driver (Optional)</Label>
-                <Select value={newVehicle.assignedDriverId} onValueChange={(value) => setNewVehicle({...newVehicle, assignedDriverId: value})}>
+                <Label htmlFor="assignedDriver">Assigned Driver</Label>
+                <Select onValueChange={(value) => setNewVehicle({...newVehicle, assignedDriverId: value})}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a driver (optional)" />
+                    <SelectValue placeholder="Select a driver" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="unassigned">No driver assigned</SelectItem>
@@ -395,12 +484,11 @@ export function Vehicles() {
                 </Select>
               </div>
             </div>
-            <div className="flex justify-end space-x-2 mt-6">
+            <div className="flex justify-end gap-2 mt-6">
               <Button variant="outline" onClick={() => setShowAddForm(false)}>
                 Cancel
               </Button>
               <Button onClick={handleAddVehicle}>
-                <Save className="mr-2 h-4 w-4" />
                 Add Vehicle
               </Button>
             </div>
@@ -415,7 +503,7 @@ export function Vehicles() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Edit Vehicle</h2>
               <Button variant="ghost" size="sm" onClick={() => setShowEditForm(false)}>
-                <X className="h-4 w-4" />
+                ×
               </Button>
             </div>
             <div className="space-y-4">
@@ -439,19 +527,12 @@ export function Vehicles() {
               </div>
               <div>
                 <Label htmlFor="editType">Type</Label>
-                <Select value={selectedVehicle.type} onValueChange={(value) => setSelectedVehicle({...selectedVehicle, type: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select vehicle type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Sedan">Sedan</SelectItem>
-                    <SelectItem value="SUV">SUV</SelectItem>
-                    <SelectItem value="Van">Van</SelectItem>
-                    <SelectItem value="Bus">Bus</SelectItem>
-                    <SelectItem value="Minibus">Minibus</SelectItem>
-                    <SelectItem value="Coaster">Coaster</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="editType"
+                  value={selectedVehicle.type}
+                  onChange={(e) => setSelectedVehicle({...selectedVehicle, type: e.target.value})}
+                  placeholder="Enter vehicle type"
+                />
               </div>
               <div>
                 <Label htmlFor="editCapacity">Capacity</Label>
@@ -465,7 +546,7 @@ export function Vehicles() {
               </div>
               <div>
                 <Label htmlFor="editAssignedDriver">Assigned Driver</Label>
-                <Select value={selectedVehicle.assignedDriverId || 'unassigned'} onValueChange={(value) => setSelectedVehicle({...selectedVehicle, assignedDriverId: value})}>
+                <Select onValueChange={(value) => setSelectedVehicle({...selectedVehicle, assignedDriverId: value})}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a driver" />
                   </SelectTrigger>
@@ -480,12 +561,11 @@ export function Vehicles() {
                 </Select>
               </div>
             </div>
-            <div className="flex justify-end space-x-2 mt-6">
+            <div className="flex justify-end gap-2 mt-6">
               <Button variant="outline" onClick={() => setShowEditForm(false)}>
                 Cancel
               </Button>
               <Button onClick={handleUpdateVehicle}>
-                <Save className="mr-2 h-4 w-4" />
                 Update Vehicle
               </Button>
             </div>
@@ -493,78 +573,78 @@ export function Vehicles() {
         </div>
       )}
 
-      {/* View Vehicle Modal */}
-      {showViewModal && selectedVehicle && (
+      {/* Vehicle Schedule Modal */}
+      {showScheduleModal && selectedVehicleForSchedule && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Vehicle Details</h2>
-              <Button variant="ghost" size="sm" onClick={() => setShowViewModal(false)}>
-                <X className="h-4 w-4" />
+              <h2 className="text-xl font-bold flex items-center">
+                <Car className="mr-2 h-5 w-5" />
+                {selectedVehicleForSchedule.model} - {selectedVehicleForSchedule.plateNumber} Schedule
+              </h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowScheduleModal(false)}>
+                ×
               </Button>
             </div>
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">Model:</span>
-                <span>{selectedVehicle.model}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">Plate Number:</span>
-                <span>{selectedVehicle.plateNumber}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">Type:</span>
-                <span>{selectedVehicle.type}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">Capacity:</span>
-                <span>{selectedVehicle.capacity} passengers</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">Availability:</span>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getAvailabilityColor(selectedVehicle.availability)}`}>
-                  {selectedVehicle.availability}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-600">Assigned Driver:</span>
-                <span>
-                  {selectedVehicle.assignedDriver ? (
-                    <span className="flex items-center text-green-600">
-                      <UserCheck className="mr-1 h-3 w-3" />
-                      {selectedVehicle.assignedDriver}
-                    </span>
-                  ) : (
-                    <span className="flex items-center text-gray-400">
-                      <UserX className="mr-1 h-3 w-3" />
-                      Not assigned
-                    </span>
-                  )}
-                </span>
-              </div>
-              
-              {/* Driver Assignment Section */}
-              <div className="border-t pt-4">
-                <Label htmlFor="assignDriver">Assign/Change Driver</Label>
-                <div className="flex space-x-2 mt-2">
-                  <Select onValueChange={(value) => handleAssignDriver(selectedVehicle.id, value)}>
-                    <SelectTrigger className="flex-1">
-                      <SelectValue placeholder="Select a driver" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="unassigned">Remove driver assignment</SelectItem>
-                      {availableDrivers.map((driver) => (
-                        <SelectItem key={driver.id} value={driver.id.toString()}>
-                          {driver.fullName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+            
+            {/* Month Navigation */}
+            <div className="flex justify-between items-center mb-4">
+              <Button variant="outline" onClick={() => navigateMonth(-1)}>
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+              <h3 className="text-lg font-semibold">
+                {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </h3>
+              <Button variant="outline" onClick={() => navigateMonth(1)}>
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
+            
+            {/* Calendar */}
+            {renderCalendar()}
+            
+            {/* Schedule List */}
+            <div className="mt-6">
+              <h4 className="text-lg font-semibold mb-3">Bookings for this month:</h4>
+              {vehicleSchedule.length === 0 ? (
+                <p className="text-gray-500">No bookings found for this month.</p>
+              ) : (
+                <div className="space-y-2">
+                  {vehicleSchedule.map(booking => (
+                    <div key={booking.id} className="p-3 border rounded-lg bg-gray-50">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h5 className="font-semibold">{booking.title}</h5>
+                          <p className="text-sm text-gray-600">Client: {booking.clientName}</p>
+                          <p className="text-sm text-gray-600">
+                            {booking.start} to {booking.end}
+                            {booking.startTime && ` (${booking.startTime} - ${booking.endTime || 'End time not set'})`}
+                          </p>
+                          {booking.driverInfo && (
+                            <p className="text-sm text-gray-600">Driver: {booking.driverInfo}</p>
+                          )}
+                          {booking.notes && (
+                            <p className="text-sm text-gray-600">Notes: {booking.notes}</p>
+                          )}
+                        </div>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          booking.bookingStatus === 'confirmed' ? 'bg-green-100 text-green-800' :
+                          booking.bookingStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {booking.bookingStatus}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
             <div className="flex justify-end mt-6">
-              <Button onClick={() => setShowViewModal(false)}>
+              <Button onClick={() => setShowScheduleModal(false)}>
                 Close
               </Button>
             </div>
