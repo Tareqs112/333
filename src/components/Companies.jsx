@@ -134,7 +134,7 @@ export function Companies() {
   };
 
   // UPDATED: Fetch Excel-like invoice data with better error handling
-  const fetchExcelInvoiceData = async (companyId, month, year) => {
+  const fetchExcelInvoiceData = async (companyId, month, year, showModal = true) => {
     try {
       console.log(`Fetching Excel invoice data for company ${companyId}, month ${month}, year ${year}`);
       
@@ -168,10 +168,14 @@ export function Companies() {
       console.log('Excel invoice data received:', data);
       
       setExcelInvoiceData(data);
-      setShowExcelInvoiceModal(true);
+      if (showModal) {
+        setShowExcelInvoiceModal(true);
+      }
     } catch (error) {
       console.error('Error fetching Excel invoice data:', error);
-      alert('Error fetching invoice data: ' + error.message + '\n\nPlease check:\n1. Server is running\n2. Company has clients with bookings\n3. Check browser console for details');
+      if (showModal) {
+        alert('Error fetching invoice data: ' + error.message + '\n\nPlease check:\n1. Server is running\n2. Company has clients with bookings\n3. Check browser console for details');
+      }
     }
   };
 
@@ -302,7 +306,7 @@ export function Companies() {
     }
   };
 
-  // UPDATED: Update payment status with better error handling and refresh
+  // FIXED: Update payment status with proper state updates and PDF refresh
   const updatePaymentStatus = async (clientId, paidAmount, paymentStatus) => {
     if (!selectedCompany) return;
     
@@ -327,10 +331,33 @@ export function Companies() {
         throw new Error(errorData.error || 'Failed to update payment');
       }
 
-      alert('Payment status updated successfully!');
+      const result = await response.json();
+      alert('Ödeme durumu başarıyla güncellendi! Fatura da güncellenecek.');
       
-      // Refresh Excel invoice data
-      fetchExcelInvoiceData(selectedCompany.id, monthlyInvoiceData.month, monthlyInvoiceData.year);
+      // Update local state immediately
+      if (excelInvoiceData && excelInvoiceData.clients) {
+        const updatedClients = excelInvoiceData.clients.map(client => {
+          if (client.clientId === clientId) {
+            return {
+              ...client,
+              paidAmount: paidAmount,
+              paymentStatus: paymentStatus,
+              dueAmount: client.totalAmount - paidAmount
+            };
+          }
+          return client;
+        });
+        
+        setExcelInvoiceData({
+          ...excelInvoiceData,
+          clients: updatedClients
+        });
+      }
+      
+      // Force refresh Excel invoice data from server to ensure PDF will be updated
+      setTimeout(() => {
+        fetchExcelInvoiceData(selectedCompany.id, monthlyInvoiceData.month, monthlyInvoiceData.year, false);
+      }, 1000);
       
       // Also refresh company clients if viewing them
       if (showClientDetails) {
@@ -338,7 +365,7 @@ export function Companies() {
       }
     } catch (error) {
       console.error('Error updating payment:', error);
-      alert('Error updating payment: ' + error.message);
+      alert('Ödeme güncellenirken hata: ' + error.message);
     }
   };
 
@@ -436,19 +463,19 @@ export function Companies() {
   );
 
   const months = [
-    { value: 1, label: 'January' }, { value: 2, label: 'February' }, { value: 3, label: 'March' },
-    { value: 4, label: 'April' }, { value: 5, label: 'May' }, { value: 6, label: 'June' },
-    { value: 7, label: 'July' }, { value: 8, label: 'August' }, { value: 9, label: 'September' },
-    { value: 10, label: 'October' }, { value: 11, label: 'November' }, { value: 12, label: 'December' }
+    { value: 1, label: 'Ocak' }, { value: 2, label: 'Şubat' }, { value: 3, label: 'Mart' },
+    { value: 4, label: 'Nisan' }, { value: 5, label: 'Mayıs' }, { value: 6, label: 'Haziran' },
+    { value: 7, label: 'Temmuz' }, { value: 8, label: 'Ağustos' }, { value: 9, label: 'Eylül' },
+    { value: 10, label: 'Ekim' }, { value: 11, label: 'Kasım' }, { value: 12, label: 'Aralık' }
   ];
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Companies Management</h1>
+        <h1 className="text-3xl font-bold">Şirket Yönetimi</h1>
         <Button onClick={() => setShowAddCompanyModal(true)} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
-          Add Company
+          Şirket Ekle
         </Button>
       </div>
 
@@ -456,7 +483,7 @@ export function Companies() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
         <Input
-          placeholder="Search companies..."
+          placeholder="Şirket ara..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10"
@@ -478,7 +505,7 @@ export function Companies() {
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      setEditingCompany(company);
+                      setEditingCompany({...company});
                       setShowEditCompanyModal(true);
                     }}
                   >
@@ -496,20 +523,34 @@ export function Companies() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Mail className="h-4 w-4" />
-                {company.email}
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Phone className="h-4 w-4" />
-                {company.phone || 'No phone'}
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Users className="h-4 w-4" />
-                {company.clientCount || 0} clients
+                <span>{company.clientCount || 0} Müşteri</span>
+                {company.bookingCount && (
+                  <>
+                    <span>•</span>
+                    <span>{company.bookingCount} Rezervasyon</span>
+                  </>
+                )}
               </div>
               
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-2 pt-3">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Mail className="h-4 w-4" />
+                <span>{company.email}</span>
+              </div>
+              
+              {company.phone && (
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Phone className="h-4 w-4" />
+                  <span>{company.phone}</span>
+                </div>
+              )}
+              
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Building className="h-4 w-4" />
+                <span>{company.contactPerson}</span>
+              </div>
+              
+              <div className="flex gap-2 pt-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -518,23 +559,10 @@ export function Companies() {
                     fetchCompanyClients(company.id);
                     setShowClientDetails(true);
                   }}
-                  className="flex items-center gap-1"
+                  className="flex-1"
                 >
-                  <Eye className="h-3 w-3" />
-                  View Clients
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedCompany(company);
-                    setShowAddClientModal(true);
-                  }}
-                  className="flex items-center gap-1"
-                >
-                  <UserPlus className="h-3 w-3" />
-                  Add Client
+                  <Eye className="h-4 w-4 mr-1" />
+                  Müşterileri Görüntüle
                 </Button>
                 
                 <Button
@@ -544,10 +572,38 @@ export function Companies() {
                     setSelectedCompany(company);
                     fetchExcelInvoiceData(company.id, monthlyInvoiceData.month, monthlyInvoiceData.year);
                   }}
-                  className="flex items-center gap-1"
+                  className="flex-1"
                 >
-                  <FileSpreadsheet className="h-3 w-3" />
-                  Excel Invoice
+                  <FileSpreadsheet className="h-4 w-4 mr-1" />
+                  Excel Faturası
+                </Button>
+              </div>
+              
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedCompany(company);
+                    setShowAddClientModal(true);
+                  }}
+                  className="flex-1"
+                >
+                  <UserPlus className="h-4 w-4 mr-1" />
+                  Müşteri Ekle
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedCompany(company);
+                    generateExcelInvoice();
+                  }}
+                  className="flex-1"
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  PDF İndir
                 </Button>
               </div>
             </CardContent>
@@ -555,96 +611,25 @@ export function Companies() {
         ))}
       </div>
 
-      {/* Client Details Modal - SIMPLIFIED */}
-      {showClientDetails && selectedCompany && (
-        <Dialog open={showClientDetails} onOpenChange={setShowClientDetails}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Building className="h-5 w-5" />
-                {selectedCompany.name} - Clients
-              </DialogTitle>
-              <DialogDescription>
-                Simplified client list for {selectedCompany.name}
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              {companyClients.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  No clients found for this company
-                </div>
-              ) : (
-                <div className="grid gap-4">
-                  {companyClients.map((client) => (
-                    <Card key={client.id} className="p-4">
-                      <div className="flex justify-between items-start">
-                        <div className="space-y-2">
-                          <h3 className="font-semibold">
-                            {client.firstName} {client.lastName}
-                          </h3>
-                          <div className="text-sm text-gray-600 space-y-1">
-                            <div className="flex items-center gap-2">
-                              <Mail className="h-3 w-3" />
-                              {client.email || 'No email'}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Phone className="h-3 w-3" />
-                              {client.phone || 'No phone'}
-                            </div>
-                            {client.createdAt && (
-                              <div className="flex items-center gap-2">
-                                <Calendar className="h-3 w-3" />
-                                {new Date(client.createdAt).toLocaleDateString()}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-semibold">
-                            ${safeToFixed(client.totalAmount)}
-                          </div>
-                          {client.paymentStatus && (
-                            <Badge variant={client.paymentStatus === 'paid' ? 'default' : 'secondary'}>
-                              {client.paymentStatus}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
+      {/* Excel Invoice Modal - MAXIMIZED */}
+      <Dialog open={showExcelInvoiceModal} onOpenChange={setShowExcelInvoiceModal}>
+        <DialogContent className="max-w-[98vw] max-h-[98vh] w-[98vw] h-[98vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Excel Faturası - {excelInvoiceData?.company?.name}</DialogTitle>
+            <DialogDescription>
+              {excelInvoiceData?.period && (
+                <span>
+                  {months.find(m => m.value === excelInvoiceData.period.month)?.label} {excelInvoiceData.period.year}
+                </span>
               )}
-            </div>
-            
-            <DialogFooter>
-              <Button onClick={() => setShowClientDetails(false)}>
-                Close
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Excel Invoice Modal */}
-      {showExcelInvoiceModal && excelInvoiceData && (
-        <Dialog open={showExcelInvoiceModal} onOpenChange={setShowExcelInvoiceModal}>
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <FileSpreadsheet className="h-5 w-5" />
-                Excel-like Invoice - {excelInvoiceData.company.name}
-              </DialogTitle>
-              <DialogDescription>
-                Monthly invoice for {excelInvoiceData.period.monthName} {excelInvoiceData.period.year}
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-6">
-              {/* Period Selection */}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {excelInvoiceData && (
+            <div className="space-y-4">
               <div className="flex gap-4 items-center">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Month</label>
+                  <label className="block text-sm font-medium mb-1">Ay</label>
                   <select
                     value={monthlyInvoiceData.month}
                     onChange={(e) => setMonthlyInvoiceData({...monthlyInvoiceData, month: parseInt(e.target.value)})}
@@ -656,214 +641,234 @@ export function Companies() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Year</label>
-                  <input
+                  <label className="block text-sm font-medium mb-1">Yıl</label>
+                  <Input
                     type="number"
                     value={monthlyInvoiceData.year}
                     onChange={(e) => setMonthlyInvoiceData({...monthlyInvoiceData, year: parseInt(e.target.value)})}
-                    className="border rounded px-3 py-2 w-24"
-                    min="2020"
-                    max="2030"
+                    className="w-24"
                   />
                 </div>
                 <Button
                   onClick={() => fetchExcelInvoiceData(selectedCompany.id, monthlyInvoiceData.month, monthlyInvoiceData.year)}
                   className="mt-6"
                 >
-                  Refresh
+                  Verileri Güncelle
                 </Button>
               </div>
 
-              {/* Excel-like Table */}
               <div className="border rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-green-600 text-white">
-                    <tr>
-                      <th className="px-4 py-3 text-left w-1/4">Client Name</th>
-                      <th className="px-4 py-3 text-left">Arrival Date</th>
-                      <th className="px-4 py-3 text-right">Amount (USD)</th>
-                      <th className="px-4 py-3 text-right">Paid</th>
-                      <th className="px-4 py-3 text-right">Due</th>
-                      <th className="px-4 py-3 text-center">Status</th>
-                      <th className="px-4 py-3 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {excelInvoiceData.clients.map((client, index) => (
-                      <tr 
-                        key={client.clientId} 
-                        className={`border-b ${
-                          client.paymentStatus === 'paid' ? 'bg-green-50' : 
-                          client.paymentStatus === 'partial' ? 'bg-yellow-50' : 'bg-red-50'
-                        }`}
-                      >
-                        <td className="px-4 py-3 font-medium">{client.clientName}</td>
-                        <td className="px-4 py-3">
-                          {client.arrivalDate ? new Date(client.arrivalDate).toLocaleDateString() : 'N/A'}
-                        </td>
-                        <td className="px-4 py-3 text-right font-semibold">
-                          ${safeToFixed(client.totalAmount)}
-                        </td>
-                        <td className="px-4 py-3 text-right text-green-600 font-semibold">
-                          ${safeToFixed(client.paidAmount)}
-                        </td>
-                        <td className="px-4 py-3 text-right text-red-600 font-semibold">
-                          ${safeToFixed(client.dueAmount)}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <Badge variant={
-                            client.paymentStatus === 'paid' ? 'default' : 
-                            client.paymentStatus === 'partial' ? 'secondary' : 'destructive'
-                          }>
-                            {client.paymentStatus}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              const newPaidAmount = prompt('Enter paid amount:', client.paidAmount);
-                              if (newPaidAmount !== null) {
-                                const amount = parseFloat(newPaidAmount);
-                                if (!isNaN(amount)) {
-                                  const status = amount >= client.totalAmount ? 'paid' : 
-                                               amount > 0 ? 'partial' : 'pending';
-                                  updatePaymentStatus(client.clientId, amount, status);
-                                }
-                              }
-                            }}
-                          >
-                            <CreditCard className="h-3 w-3" />
-                          </Button>
-                        </td>
+                <div className="overflow-x-auto" style={{maxHeight: '70vh'}}>
+                  <table className="w-full min-w-[1200px]">
+                    <thead className="bg-gray-50 sticky top-0">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 min-w-[200px]">Müşteri</th>
+                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 min-w-[120px]">Varış Tarihi</th>
+                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 min-w-[120px]">Toplam Tutar</th>
+                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 min-w-[120px]">Ödenen Tutar</th>
+                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 min-w-[120px]">Kalan Tutar</th>
+                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 min-w-[120px]">Ödeme Durumu</th>
+                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 min-w-[200px]">Hizmetler</th>
+                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 min-w-[150px]">İşlemler</th>
                       </tr>
-                    ))}
-                    
-                    {/* Summary Row */}
-                    <tr className="bg-blue-100 font-bold">
-                      <td className="px-4 py-3">TOTALS</td>
-                      <td className="px-4 py-3"></td>
-                      <td className="px-4 py-3 text-right">${safeToFixed(excelInvoiceData.summary.totalAmount)}</td>
-                      <td className="px-4 py-3 text-right text-green-600">${safeToFixed(excelInvoiceData.summary.totalPaid)}</td>
-                      <td className="px-4 py-3 text-right text-red-600">${safeToFixed(excelInvoiceData.summary.totalDue)}</td>
-                      <td className="px-4 py-3 text-center">{excelInvoiceData.summary.clientCount} clients</td>
-                      <td className="px-4 py-3"></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-2">
-                <Button onClick={generateExcelInvoice} className="flex items-center gap-2">
-                  <Download className="h-4 w-4" />
-                  Download Partner Invoice
-                </Button>
-                <Button onClick={generateMyCompanyInvoice} variant="outline" className="flex items-center gap-2">
-                  <Receipt className="h-4 w-4" />
-                  Download My Company Invoice
-                </Button>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {excelInvoiceData.clients.map((client) => (
+                        <tr key={client.clientId} className="hover:bg-gray-50">
+                          <td className="px-6 py-4">
+                            <div>
+                              <p className="font-medium">{client.clientName}</p>
+                              {client.email && <p className="text-sm text-gray-600">{client.email}</p>}
+                              {client.phone && <p className="text-sm text-gray-600">{client.phone}</p>}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm">
+                            {client.arrivalDate ? new Date(client.arrivalDate).toLocaleDateString() : '-'}
+                          </td>
+                          <td className="px-6 py-4 text-sm font-medium">
+                            {safeToFixed(client.totalAmount)}
+                          </td>
+                          <td className="px-6 py-4">
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={client.paidAmount || 0}
+                              onChange={(e) => {
+                                const newAmount = parseFloat(e.target.value) || 0;
+                                // Update local state immediately for UI responsiveness
+                                if (excelInvoiceData && excelInvoiceData.clients) {
+                                  const updatedClients = excelInvoiceData.clients.map(c => {
+                                    if (c.clientId === client.clientId) {
+                                      return {
+                                        ...c,
+                                        paidAmount: newAmount,
+                                        dueAmount: c.totalAmount - newAmount
+                                      };
+                                    }
+                                    return c;
+                                  });
+                                  
+                                  setExcelInvoiceData({
+                                    ...excelInvoiceData,
+                                    clients: updatedClients
+                                  });
+                                }
+                              }}
+                              onBlur={(e) => {
+                                const newAmount = parseFloat(e.target.value) || 0;
+                                // Determine payment status based on amount
+                                let status = 'pending';
+                                if (newAmount >= client.totalAmount) {
+                                  status = 'paid';
+                                } else if (newAmount > 0) {
+                                  status = 'partial';
+                                }
+                                updatePaymentStatus(client.clientId, newAmount, status);
+                              }}
+                              className="w-32"
+                            />
+                          </td>
+                          <td className="px-6 py-4 text-sm font-medium text-red-600">
+                            {safeToFixed(client.dueAmount)}
+                          </td>
+                          <td className="px-6 py-4">
+                            <Badge variant={client.paymentStatus === 'paid' ? 'success' : client.paymentStatus === 'partial' ? 'warning' : 'destructive'}>
+                              {client.paymentStatus}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4 text-sm">
+                            <div className="space-y-1">
+                              <p>{client.serviceCount} hizmet</p>
+                              {client.services && client.services.slice(0, 2).map((service, idx) => (
+                                <p key={idx} className="text-xs text-gray-600">
+                                  {service.serviceName} - {safeToFixed(service.amount)}
+                                </p>
+                              ))}
+                              {client.services && client.services.length > 2 && (
+                                <p className="text-xs text-gray-500">
+                                  +{client.services.length - 2} daha fazla hizmet
+                                </p>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <Button
+                              size="sm"
+                              onClick={() => updatePaymentStatus(client.clientId, client.totalAmount, 'paid')}
+                            >
+                              Ödendi Olarak İşaretle
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
-            
-            <DialogFooter>
-              <Button onClick={() => setShowExcelInvoiceModal(false)}>
-                Close
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+          )}
+          
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                if (selectedCompany) {
+                  generateExcelInvoice();
+                }
+              }}
+            >
+              Download PDF
+            </Button>
+            <Button
+              onClick={() => {
+                if (selectedCompany) {
+                  generateMyCompanyInvoice();
+                }
+              }}
+              variant="outline"
+            >
+              My Company Detailed Invoice
+            </Button>
+            <Button variant="outline" onClick={() => setShowExcelInvoiceModal(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Company Modal */}
-      {showAddCompanyModal && (
-        <Dialog open={showAddCompanyModal} onOpenChange={setShowAddCompanyModal}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Company</DialogTitle>
-              <DialogDescription>
-                Enter the company details below
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Company Name *</label>
-                <Input
-                  value={newCompany.name}
-                  onChange={(e) => setNewCompany({...newCompany, name: e.target.value})}
-                  placeholder="Enter company name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Contact Person</label>
-                <Input
-                  value={newCompany.contactPerson}
-                  onChange={(e) => setNewCompany({...newCompany, contactPerson: e.target.value})}
-                  placeholder="Enter contact person name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Email *</label>
-                <Input
-                  type="email"
-                  value={newCompany.email}
-                  onChange={(e) => setNewCompany({...newCompany, email: e.target.value})}
-                  placeholder="Enter email address"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Phone</label>
-                <Input
-                  value={newCompany.phone}
-                  onChange={(e) => setNewCompany({...newCompany, phone: e.target.value})}
-                  placeholder="Enter phone number"
-                />
-              </div>
+      <Dialog open={showAddCompanyModal} onOpenChange={setShowAddCompanyModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Company</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Company Name *</label>
+              <Input
+                value={newCompany.name}
+                onChange={(e) => setNewCompany({...newCompany, name: e.target.value})}
+                placeholder="Company Name"
+              />
             </div>
-            
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowAddCompanyModal(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={addCompany} 
-                disabled={isSubmitting || !newCompany.name || !newCompany.email}
-              >
-                {isSubmitting ? 'Adding...' : 'Add Company'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+            <div>
+              <label className="block text-sm font-medium mb-1">Contact Person *</label>
+              <Input
+                value={newCompany.contactPerson}
+                onChange={(e) => setNewCompany({...newCompany, contactPerson: e.target.value})}
+                placeholder="Contact Person Name"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Email *</label>
+              <Input
+                type="email"
+                value={newCompany.email}
+                onChange={(e) => setNewCompany({...newCompany, email: e.target.value})}
+                placeholder="Email"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Phone</label>
+              <Input
+                value={newCompany.phone}
+                onChange={(e) => setNewCompany({...newCompany, phone: e.target.value})}
+                placeholder="Phone Number"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={addCompany} disabled={isSubmitting}>
+              {isSubmitting ? 'Adding...' : 'Add Company'}
+            </Button>
+            <Button variant="outline" onClick={() => setShowAddCompanyModal(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Company Modal */}
-      {showEditCompanyModal && editingCompany && (
-        <Dialog open={showEditCompanyModal} onOpenChange={setShowEditCompanyModal}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Company</DialogTitle>
-              <DialogDescription>
-                Update the company details below
-              </DialogDescription>
-            </DialogHeader>
-            
+      <Dialog open={showEditCompanyModal} onOpenChange={setShowEditCompanyModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Company</DialogTitle>
+          </DialogHeader>
+          {editingCompany && (
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Company Name *</label>
                 <Input
                   value={editingCompany.name}
                   onChange={(e) => setEditingCompany({...editingCompany, name: e.target.value})}
-                  placeholder="Enter company name"
+                  placeholder="Company Name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Contact Person</label>
+                <label className="block text-sm font-medium mb-1">Contact Person *</label>
                 <Input
                   value={editingCompany.contactPerson}
                   onChange={(e) => setEditingCompany({...editingCompany, contactPerson: e.target.value})}
-                  placeholder="Enter contact person name"
+                  placeholder="Contact Person Name"
                 />
               </div>
               <div>
@@ -872,7 +877,7 @@ export function Companies() {
                   type="email"
                   value={editingCompany.email}
                   onChange={(e) => setEditingCompany({...editingCompany, email: e.target.value})}
-                  placeholder="Enter email address"
+                  placeholder="Email"
                 />
               </div>
               <div>
@@ -880,124 +885,158 @@ export function Companies() {
                 <Input
                   value={editingCompany.phone || ''}
                   onChange={(e) => setEditingCompany({...editingCompany, phone: e.target.value})}
-                  placeholder="Enter phone number"
+                  placeholder="Phone Number"
                 />
               </div>
             </div>
-            
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowEditCompanyModal(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={updateCompany} 
-                disabled={isSubmitting || !editingCompany.name || !editingCompany.email}
-              >
-                {isSubmitting ? 'Updating...' : 'Update Company'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+          )}
+          <DialogFooter>
+            <Button onClick={updateCompany} disabled={isSubmitting}>
+              {isSubmitting ? 'Updating...' : 'Update Company'}
+            </Button>
+            <Button variant="outline" onClick={() => setShowEditCompanyModal(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Client Modal */}
-      {showAddClientModal && selectedCompany && (
-        <Dialog open={showAddClientModal} onOpenChange={setShowAddClientModal}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Client to {selectedCompany.name}</DialogTitle>
-              <DialogDescription>
-                Add a new client directly to this company
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">First Name *</label>
-                  <Input
-                    value={newClient.firstName}
-                    onChange={(e) => setNewClient({...newClient, firstName: e.target.value})}
-                    placeholder="Enter first name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Last Name *</label>
-                  <Input
-                    value={newClient.lastName}
-                    onChange={(e) => setNewClient({...newClient, lastName: e.target.value})}
-                    placeholder="Enter last name"
-                  />
-                </div>
-              </div>
+      <Dialog open={showAddClientModal} onOpenChange={setShowAddClientModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Client</DialogTitle>
+            <DialogDescription>
+              Add a new client to {selectedCompany?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Email</label>
+                <label className="block text-sm font-medium mb-1">First Name *</label>
                 <Input
-                  type="email"
-                  value={newClient.email}
-                  onChange={(e) => setNewClient({...newClient, email: e.target.value})}
-                  placeholder="Enter email address"
+                  value={newClient.firstName}
+                  onChange={(e) => setNewClient({...newClient, firstName: e.target.value})}
+                  placeholder="First Name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Phone</label>
+                <label className="block text-sm font-medium mb-1">Last Name *</label>
                 <Input
-                  value={newClient.phone}
-                  onChange={(e) => setNewClient({...newClient, phone: e.target.value})}
-                  placeholder="Enter phone number"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Total Amount *</label>
-                <Input
-                  type="number"
-                  value={newClient.totalAmount}
-                  onChange={(e) => setNewClient({...newClient, totalAmount: e.target.value})}
-                  placeholder="Enter total amount"
-                  min="0"
-                  step="0.01"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Arrival Date</label>
-                <Input
-                  type="date"
-                  value={newClient.arrivalDate}
-                  onChange={(e) => setNewClient({...newClient, arrivalDate: e.target.value})}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Service Name</label>
-                <Input
-                  value={newClient.serviceName}
-                  onChange={(e) => setNewClient({...newClient, serviceName: e.target.value})}
-                  placeholder="Enter service name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Notes</label>
-                <Input
-                  value={newClient.notes}
-                  onChange={(e) => setNewClient({...newClient, notes: e.target.value})}
-                  placeholder="Enter any notes"
+                  value={newClient.lastName}
+                  onChange={(e) => setNewClient({...newClient, lastName: e.target.value})}
+                  placeholder="Last Name"
                 />
               </div>
             </div>
-            
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowAddClientModal(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={addClientToCompany} 
-                disabled={isSubmitting || !newClient.firstName || !newClient.lastName || !newClient.totalAmount}
-              >
-                {isSubmitting ? 'Adding...' : 'Add Client'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+            <div>
+              <label className="block text-sm font-medium mb-1">Email *</label>
+              <Input
+                type="email"
+                value={newClient.email}
+                onChange={(e) => setNewClient({...newClient, email: e.target.value})}
+                placeholder="Email"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Phone</label>
+              <Input
+                value={newClient.phone}
+                onChange={(e) => setNewClient({...newClient, phone: e.target.value})}
+                placeholder="Phone Number"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Total Amount</label>
+              <Input
+                type="number"
+                step="0.01"
+                value={newClient.totalAmount}
+                onChange={(e) => setNewClient({...newClient, totalAmount: e.target.value})}
+                placeholder="Total Amount"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Arrival Date</label>
+              <Input
+                type="date"
+                value={newClient.arrivalDate}
+                onChange={(e) => setNewClient({...newClient, arrivalDate: e.target.value})}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Notes</label>
+              <Input
+                value={newClient.notes}
+                onChange={(e) => setNewClient({...newClient, notes: e.target.value})}
+                placeholder="Additional Notes"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={addClientToCompany} disabled={isSubmitting}>
+              {isSubmitting ? 'Adding...' : 'Add Client'}
+            </Button>
+            <Button variant="outline" onClick={() => setShowAddClientModal(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Client Details Modal */}
+      <Dialog open={showClientDetails} onOpenChange={setShowClientDetails}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Clients for {selectedCompany?.name}</DialogTitle>
+          </DialogHeader>
+          {companyClients && (
+            <div className="space-y-4">
+              {companyClients.clients && companyClients.clients.length > 0 ? (
+                <div className="space-y-3">
+                  {companyClients.clients.map((client) => (
+                    <Card key={client.clientId}>
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-medium">{client.clientName}</h3>
+                            <p className="text-sm text-gray-600">{client.email}</p>
+                            <p className="text-sm font-medium mt-2">
+                              Total Amount: {safeToFixed(client.totalAmount)}
+                            </p>
+                            {client.paidAmount !== undefined && (
+                              <>
+                                <p className="text-sm text-green-600">
+                                  Paid Amount: {safeToFixed(client.paidAmount)}
+                                </p>
+                                <p className="text-sm text-red-600">
+                                  Due Amount: {safeToFixed(client.dueAmount)}
+                                </p>
+                              </>
+                            )}
+                          </div>
+                          <div className="text-left">
+                            <Badge variant={client.paymentStatus === 'paid' ? 'success' : client.paymentStatus === 'partial' ? 'warning' : 'destructive'}>
+                              {client.paymentStatus}
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-gray-500 py-8">No clients found for this company.</p>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowClientDetails(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
