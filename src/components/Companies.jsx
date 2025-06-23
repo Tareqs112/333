@@ -257,7 +257,7 @@ export function Companies() {
       const downloadUrl = `https://111-production-573e.up.railway.app${result.pdfPath}`;
       window.open(downloadUrl, '_blank');
       
-      alert('Excel-like invoice generated successfully!');
+      alert('invoice generated successfully!');
     } catch (error) {
       console.error('Error generating Excel invoice:', error);
       alert('Error generating invoice: ' + error.message);
@@ -679,7 +679,7 @@ export function Companies() {
                 <table className="w-full">
                   <thead className="bg-green-600 text-white">
                     <tr>
-                      <th className="px-4 py-3 text-left">Client Name</th>
+                      <th className="px-4 py-3 text-left w-1/4">Client Name</th>
                       <th className="px-4 py-3 text-left">Arrival Date</th>
                       <th className="px-4 py-3 text-right">Amount (USD)</th>
                       <th className="px-4 py-3 text-right">Paid</th>
